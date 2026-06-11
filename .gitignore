@@ -1,0 +1,34 @@
+# Documentos internos de la postulación CORFO (no van al repo público)
+Canopy GuardIAn/
+*.pdf
+
+# Backups locales — historial de iteraciones del HTML
+versions/
+
+# Imágenes originales en alta resolución (las optimizadas .webp/.jpg sí van al repo)
+images/originals/
+
+# Archivos de sistema
+Thumbs.db
+.DS_Store
+desktop.ini
+
+# Editores
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Python (por optimize_images.py)
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# Node (por si en el futuro)
+node_modules/
+
+# Logs
+*.log

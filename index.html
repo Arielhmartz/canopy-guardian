@@ -1,0 +1,2348 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Canopy GuardIAn — Proyecto CORFO de detección de tala ilegal con IA</title>
+  <meta name="description" content="Canopy GuardIAn: proyecto de innovación para detección acústica de tala ilegal. Prototipo en validación, buscando financiamiento CORFO para escalar a áreas protegidas y predios forestales en Chile." />
+
+  <!-- Favicon (SVG inline, mismo logo) -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'><polygon points='20,4 32,11 32,23 20,30 8,23 8,11' fill='none' stroke='%2322C55E' stroke-width='2.5' stroke-linejoin='round'/><circle cx='14' cy='14' r='2' fill='%232DD4BF'/><circle cx='26' cy='14' r='2' fill='%232DD4BF'/><circle cx='20' cy='22' r='2' fill='%232DD4BF'/><line x1='14' y1='14' x2='26' y2='14' stroke='%232DD4BF' stroke-width='1.5'/><line x1='14' y1='14' x2='20' y2='22' stroke='%232DD4BF' stroke-width='1.5'/><line x1='26' y1='14' x2='20' y2='22' stroke='%232DD4BF' stroke-width='1.5'/><line x1='20' y1='30' x2='20' y2='36' stroke='%2322C55E' stroke-width='2.5'/><line x1='15' y1='36' x2='25' y2='36' stroke='%2322C55E' stroke-width='2.5' stroke-linecap='round'/></svg>" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ===== Design tokens (Organic Biophilic — Dark) ===== */
+    :root {
+      --color-primary: #1E293B;
+      --color-on-primary: #FFFFFF;
+      --color-secondary: #334155;
+      --color-accent: #22C55E;
+      --color-accent-hover: #16A34A;
+      --color-accent-soft: rgba(34, 197, 94, 0.12);
+      --color-background: #0F172A;
+      --color-surface: #131C2E;
+      --color-surface-2: #1A2438;
+      --color-foreground: #F8FAFC;
+      --color-muted-fg: #94A3B8;
+      --color-muted: #272F42;
+      --color-border: rgba(148, 163, 184, 0.18);
+      --color-border-strong: #475569;
+      --color-destructive: #EF4444;
+      --color-warning: #F59E0B;
+      --color-ring: #22C55E;
+
+      --radius-sm: 10px;
+      --radius-md: 16px;
+      --radius-lg: 24px;
+      --radius-xl: 32px;
+
+      --shadow-sm: 0 1px 2px rgba(0,0,0,0.3);
+      --shadow-md: 0 8px 24px rgba(0,0,0,0.35);
+      --shadow-lg: 0 20px 60px rgba(0,0,0,0.45);
+      --shadow-glow: 0 0 0 1px rgba(34, 197, 94, 0.35), 0 12px 32px rgba(34, 197, 94, 0.18);
+
+      --font-display: 'Space Grotesk', system-ui, sans-serif;
+      --font-body: 'DM Sans', system-ui, sans-serif;
+
+      --max-w: 1200px;
+      --transition: 200ms cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* ===== Reset / Base ===== */
+    *, *::before, *::after { box-sizing: border-box; }
+    html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+    body {
+      margin: 0;
+      font-family: var(--font-body);
+      font-size: 16px;
+      line-height: 1.6;
+      color: var(--color-foreground);
+      background: var(--color-background);
+      background-image:
+        radial-gradient(ellipse 80% 50% at 50% -10%, rgba(34, 197, 94, 0.10), transparent 60%),
+        radial-gradient(ellipse 60% 40% at 100% 30%, rgba(34, 197, 94, 0.06), transparent 70%);
+      background-attachment: fixed;
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+    }
+    img, svg { display: block; max-width: 100%; height: auto; }
+    a { color: inherit; text-decoration: none; }
+    button { font: inherit; cursor: pointer; }
+
+    h1, h2, h3, h4 {
+      font-family: var(--font-display);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      line-height: 1.15;
+      margin: 0 0 0.5em;
+    }
+    h1 { font-size: clamp(2.25rem, 5vw + 1rem, 4.25rem); }
+    h2 { font-size: clamp(1.75rem, 2.5vw + 1rem, 2.75rem); }
+    h3 { font-size: clamp(1.25rem, 1vw + 1rem, 1.5rem); }
+    p { margin: 0 0 1em; color: var(--color-foreground); }
+    .muted { color: var(--color-muted-fg); }
+
+    .container {
+      width: 100%;
+      max-width: var(--max-w);
+      margin-inline: auto;
+      padding-inline: clamp(1rem, 4vw, 2rem);
+    }
+
+    /* ===== Accessibility ===== */
+    :focus-visible {
+      outline: 2px solid var(--color-ring);
+      outline-offset: 3px;
+      border-radius: var(--radius-sm);
+    }
+    .sr-only {
+      position: absolute; width: 1px; height: 1px;
+      padding: 0; margin: -1px; overflow: hidden;
+      clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+    }
+    .skip-link {
+      position: absolute; top: -40px; left: 8px;
+      background: var(--color-accent); color: #052e16;
+      padding: 8px 14px; border-radius: var(--radius-sm);
+      font-weight: 600; z-index: 1000;
+    }
+    .skip-link:focus { top: 8px; }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+      }
+    }
+
+    /* ===== Header ===== */
+    .header {
+      position: sticky; top: 0; z-index: 50;
+      background: rgba(15, 23, 42, 0.78);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--color-border);
+    }
+    .header-inner {
+      display: flex; align-items: center; justify-content: space-between;
+      padding-block: 16px;
+    }
+    .logo {
+      display: inline-flex; align-items: center; gap: 10px;
+      font-family: var(--font-display); font-weight: 700;
+      font-size: 1.125rem; letter-spacing: -0.01em;
+      color: var(--color-foreground);
+    }
+    .logo-mark {
+      width: 40px; height: 40px;
+      display: grid; place-items: center;
+      background: var(--color-accent-soft);
+      border-radius: 12px;
+      color: var(--color-accent);
+    }
+    .logo .brand-name {
+      white-space: nowrap;
+    }
+    .logo .brand-accent {
+      color: var(--color-accent);
+      font-weight: 700;
+    }
+    .nav {
+      display: none; gap: 28px;
+      font-size: 0.95rem; color: var(--color-muted-fg);
+    }
+    .nav a { transition: color var(--transition); }
+    .nav a:hover { color: var(--color-foreground); }
+    @media (min-width: 768px) {
+      .nav { display: flex; }
+    }
+
+    /* ===== Buttons ===== */
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center;
+      gap: 8px;
+      padding: 14px 24px;
+      border-radius: 999px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      border: 1px solid transparent;
+      transition: transform var(--transition), background-color var(--transition), border-color var(--transition), box-shadow var(--transition);
+      min-height: 48px;
+      white-space: nowrap;
+    }
+    .btn:active { transform: translateY(1px); }
+    .btn-primary {
+      background: var(--color-accent);
+      color: #052e16;
+      box-shadow: var(--shadow-glow);
+    }
+    .btn-primary:hover { background: var(--color-accent-hover); }
+    .btn-ghost {
+      background: transparent;
+      color: var(--color-foreground);
+      border-color: var(--color-border-strong);
+    }
+    .btn-ghost:hover {
+      background: rgba(148, 163, 184, 0.08);
+      border-color: var(--color-foreground);
+    }
+
+    /* ===== Hero ===== */
+    .hero { padding-block: clamp(60px, 10vw, 120px) 64px; position: relative; overflow: hidden; }
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 48px;
+      align-items: center;
+    }
+    @media (min-width: 960px) {
+      .hero-grid { grid-template-columns: 1.05fr 0.95fr; gap: 64px; }
+    }
+    .hero-image {
+      position: relative;
+      border-radius: var(--radius-xl);
+      overflow: hidden;
+      aspect-ratio: 4 / 5;
+      max-height: 560px;
+      box-shadow: var(--shadow-lg);
+      border: 1px solid var(--color-border);
+    }
+    .hero-image img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .hero-image::after {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(180deg, transparent 40%, rgba(15, 23, 42, 0.85) 100%);
+      pointer-events: none;
+    }
+    .hero-image-tag {
+      position: absolute; left: 20px; bottom: 20px; right: 20px;
+      z-index: 2;
+      display: flex; align-items: center; gap: 12px;
+      background: rgba(15, 23, 42, 0.78);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      padding: 12px 14px;
+    }
+    .hero-image-tag .icon {
+      width: 36px; height: 36px;
+      display: grid; place-items: center;
+      background: var(--color-accent-soft);
+      color: var(--color-accent);
+      border-radius: 10px;
+      flex: none;
+    }
+    .hero-image-tag .txt {
+      font-size: 0.82rem;
+      color: var(--color-muted-fg);
+      line-height: 1.4;
+    }
+    .hero-image-tag .txt strong {
+      color: var(--color-foreground);
+      display: block;
+      font-size: 0.92rem;
+      font-weight: 600;
+    }
+
+    /* ===== Parallax bands ===== */
+    .parallax {
+      position: relative;
+      min-height: clamp(320px, 52vh, 520px);
+      background-size: cover;
+      background-position: center;
+      background-attachment: fixed;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      padding: 80px 24px;
+      isolation: isolate;
+    }
+    .parallax::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(180deg, rgba(15, 23, 42, 0.65), rgba(15, 23, 42, 0.85));
+      z-index: -1;
+    }
+    .parallax-content { max-width: 760px; }
+    .parallax h2 {
+      color: var(--color-foreground);
+      font-size: clamp(1.6rem, 2.4vw + 1rem, 2.5rem);
+      margin-bottom: 12px;
+    }
+    .parallax p {
+      color: rgba(248, 250, 252, 0.85);
+      font-size: clamp(1rem, 0.6vw + 0.9rem, 1.15rem);
+      margin: 0;
+    }
+    .parallax .accent { color: var(--color-accent); }
+    /* On touch devices fixed bg jankifies; fallback to scroll */
+    @media (hover: none) and (pointer: coarse) {
+      .parallax { background-attachment: scroll; }
+    }
+
+    /* ===== Low-cost differentiator ===== */
+    .lowcost {
+      display: grid;
+      gap: 32px;
+      grid-template-columns: 1fr;
+      align-items: center;
+    }
+    @media (min-width: 960px) {
+      .lowcost { grid-template-columns: 1fr 1fr; gap: 56px; }
+    }
+    .lowcost-card {
+      background:
+        radial-gradient(ellipse at 0% 0%, rgba(34, 197, 94, 0.18), transparent 50%),
+        var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: 36px;
+    }
+    .lowcost-compare {
+      display: grid; gap: 16px;
+      grid-template-columns: 1fr;
+    }
+    .lc-row {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      gap: 12px;
+      align-items: center;
+    }
+    .lc-side {
+      padding: 16px;
+      border-radius: var(--radius-md);
+      background: var(--color-background);
+      border: 1px solid var(--color-border);
+      text-align: center;
+    }
+    .lc-side .lbl {
+      font-size: 0.72rem; text-transform: uppercase;
+      letter-spacing: 0.1em; color: var(--color-muted-fg);
+      margin-bottom: 8px;
+    }
+    .lc-side .val {
+      font-family: var(--font-display);
+      font-size: 1.25rem; font-weight: 700;
+      color: var(--color-foreground);
+    }
+    .lc-side.us {
+      border-color: rgba(34, 197, 94, 0.4);
+      background: var(--color-accent-soft);
+    }
+    .lc-side.us .val { color: var(--color-accent); }
+    .lc-vs {
+      font-family: var(--font-display);
+      font-size: 0.8rem; color: var(--color-muted-fg);
+      font-weight: 600;
+    }
+
+    /* ===== Map / Detection flow ===== */
+    .mapflow {
+      display: grid;
+      gap: 32px;
+      grid-template-columns: 1fr;
+    }
+    @media (min-width: 1024px) {
+      .mapflow { grid-template-columns: 1.4fr 0.6fr; gap: 40px; align-items: center; }
+    }
+    .map-wrap {
+      position: relative;
+      background:
+        radial-gradient(ellipse 60% 50% at 30% 60%, rgba(34, 197, 94, 0.10), transparent 70%),
+        var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      overflow: hidden;
+      box-shadow: var(--shadow-md);
+    }
+    .map-wrap svg.map {
+      width: 100%; height: auto; display: block;
+      border-radius: var(--radius-md);
+    }
+    .map-legend {
+      display: flex; flex-wrap: wrap;
+      gap: 12px 20px;
+      padding: 14px 4px 4px;
+      font-size: 0.82rem;
+      color: var(--color-muted-fg);
+    }
+    .map-legend .item {
+      display: inline-flex; align-items: center; gap: 8px;
+    }
+    .map-legend .swatch {
+      width: 12px; height: 12px; border-radius: 50%;
+      flex: none;
+    }
+    .swatch.s-ok    { background: var(--color-accent); }
+    .swatch.s-alert { background: var(--color-destructive); box-shadow: 0 0 0 4px rgba(239,68,68,0.18); }
+    .swatch.s-route { background: transparent; border: 2px dashed var(--color-accent); }
+
+    /* Pulse animation for alert marker */
+    @keyframes ripple {
+      0%   { r: 8;  opacity: 0.7; }
+      100% { r: 26; opacity: 0;   }
+    }
+    .map-ripple { transform-origin: center; animation: ripple 2.2s infinite ease-out; }
+    .map-ripple-2 { animation-delay: 1.1s; }
+
+    @keyframes dash-flow {
+      to { stroke-dashoffset: -200; }
+    }
+    .map-route {
+      stroke-dasharray: 4 8;
+      animation: dash-flow 6s linear infinite;
+    }
+
+    /* Phone mockup */
+    .phone-mock {
+      max-width: 320px;
+      margin-inline: auto;
+      background: var(--color-surface-2);
+      border: 1px solid var(--color-border-strong);
+      border-radius: 32px;
+      padding: 14px;
+      box-shadow: var(--shadow-lg);
+    }
+    .phone-screen {
+      background: #052e16;
+      border-radius: 22px;
+      padding: 18px 14px;
+      position: relative;
+      min-height: 380px;
+    }
+    .phone-statusbar {
+      display: flex; justify-content: space-between;
+      font-size: 0.7rem; color: rgba(248,250,252,0.65);
+      margin-bottom: 14px;
+      font-variant-numeric: tabular-nums;
+    }
+    .wa-header {
+      display: flex; align-items: center; gap: 10px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      margin-bottom: 14px;
+    }
+    .wa-avatar {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      background: var(--color-accent);
+      display: grid; place-items: center;
+      color: #052e16;
+      font-weight: 700;
+      flex: none;
+    }
+    .wa-header .nm {
+      font-weight: 600; font-size: 0.9rem;
+      color: var(--color-foreground);
+    }
+    .wa-header .st {
+      font-size: 0.72rem;
+      color: rgba(248,250,252,0.55);
+    }
+    .wa-bubble {
+      background: #064E3B;
+      border-radius: 14px 14px 14px 4px;
+      padding: 12px 14px;
+      color: #ECFDF5;
+      font-size: 0.82rem;
+      line-height: 1.5;
+      max-width: 100%;
+      margin-bottom: 10px;
+      animation: bubble-in 0.5s ease-out both;
+    }
+    .wa-bubble.delay { animation-delay: 0.4s; }
+    .wa-bubble strong { color: #FFFFFF; }
+    .wa-bubble .time {
+      display: block;
+      font-size: 0.65rem;
+      color: rgba(255,255,255,0.55);
+      text-align: right;
+      margin-top: 6px;
+      font-variant-numeric: tabular-nums;
+    }
+    .wa-bubble .audio {
+      display: flex; align-items: center; gap: 10px;
+      margin-top: 8px;
+      padding: 8px 10px;
+      background: rgba(255,255,255,0.08);
+      border-radius: 999px;
+    }
+    .wa-bubble .audio .play-btn {
+      width: 26px; height: 26px;
+      background: var(--color-accent);
+      color: #052e16;
+      border-radius: 50%;
+      display: grid; place-items: center;
+      flex: none;
+    }
+    .wa-bubble .audio .wave {
+      flex: 1;
+      height: 18px;
+      background: linear-gradient(90deg,
+        rgba(34,197,94,0.6) 0%, rgba(34,197,94,0.6) 30%,
+        rgba(255,255,255,0.18) 30%, rgba(255,255,255,0.18) 100%);
+      mask-image: repeating-linear-gradient(90deg, #000 0 2px, transparent 2px 5px);
+      -webkit-mask-image: repeating-linear-gradient(90deg, #000 0 2px, transparent 2px 5px);
+    }
+    @keyframes bubble-in {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0);   }
+    }
+
+    /* ===== Reveal-on-scroll ===== */
+    .reveal {
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 600ms cubic-bezier(0.4, 0, 0.2, 1),
+                  transform 600ms cubic-bezier(0.4, 0, 0.2, 1);
+      will-change: opacity, transform;
+    }
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .reveal { opacity: 1; transform: none; transition: none; }
+      .map-ripple, .map-route, .wa-bubble { animation: none !important; }
+    }
+    .hero-eyebrow {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 6px 14px;
+      background: var(--color-accent-soft);
+      border: 1px solid rgba(34, 197, 94, 0.25);
+      color: #86EFAC;
+      border-radius: 999px;
+      font-size: 0.85rem; font-weight: 500;
+      margin-bottom: 20px;
+    }
+    .hero-eyebrow .dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--color-accent);
+      box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.25);
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.25); }
+      50%      { box-shadow: 0 0 0 8px rgba(34, 197, 94, 0.10); }
+    }
+    .hero h1 .accent { color: var(--color-accent); }
+    .hero-sub {
+      max-width: 640px;
+      font-size: clamp(1.05rem, 1vw + 0.85rem, 1.25rem);
+      color: var(--color-muted-fg);
+      margin-bottom: 32px;
+    }
+    .hero-ctas { display: flex; flex-wrap: wrap; gap: 12px; }
+    .hero-meta {
+      display: flex; flex-wrap: wrap; gap: 24px 36px;
+      margin-top: 48px;
+      padding-top: 32px;
+      border-top: 1px solid var(--color-border);
+    }
+    .hero-meta-item .num {
+      font-family: var(--font-display);
+      font-size: 1.75rem; font-weight: 700;
+      color: var(--color-foreground);
+    }
+    .hero-meta-item .lbl {
+      font-size: 0.85rem; color: var(--color-muted-fg);
+    }
+
+    /* ===== Section ===== */
+    .section { padding-block: clamp(64px, 8vw, 112px); }
+    .section-head { max-width: 720px; margin-bottom: 48px; }
+    .section-eyebrow {
+      display: inline-block;
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--color-accent);
+      margin-bottom: 12px;
+    }
+    .section-sub { color: var(--color-muted-fg); font-size: 1.05rem; }
+
+    /* ===== Bento Grid (Características) ===== */
+    .bento {
+      display: grid;
+      gap: 16px;
+      grid-template-columns: 1fr;
+    }
+    @media (min-width: 700px) {
+      .bento {
+        grid-template-columns: repeat(6, 1fr);
+        grid-auto-rows: minmax(180px, auto);
+      }
+      .bento .b-1 { grid-column: span 4; grid-row: span 2; }
+      .bento .b-2 { grid-column: span 2; }
+      .bento .b-3 { grid-column: span 2; }
+      .bento .b-4 { grid-column: span 3; }
+      .bento .b-5 { grid-column: span 3; }
+    }
+    .bento-card {
+      position: relative;
+      padding: 28px;
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      transition: transform var(--transition), border-color var(--transition), background var(--transition);
+    }
+    .bento-card:hover {
+      border-color: rgba(34, 197, 94, 0.35);
+      transform: translateY(-2px);
+    }
+    .bento-card .icon {
+      width: 44px; height: 44px;
+      display: grid; place-items: center;
+      background: var(--color-accent-soft);
+      color: var(--color-accent);
+      border-radius: 12px;
+      margin-bottom: 18px;
+    }
+    .bento-card h3 { margin-bottom: 8px; }
+    .bento-card p { color: var(--color-muted-fg); margin: 0; }
+    .b-1 {
+      background:
+        radial-gradient(ellipse 80% 80% at 80% 0%, rgba(34, 197, 94, 0.18), transparent 60%),
+        var(--color-surface);
+    }
+    .b-1 h3 { font-size: clamp(1.5rem, 2vw + 0.5rem, 2rem); }
+
+    /* ===== Problema chart (b-1) ===== */
+    .problem-stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-top: 24px;
+      padding-top: 24px;
+      border-top: 1px solid var(--color-border);
+    }
+    .stat-block {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 14px;
+      background: rgba(15, 23, 42, 0.45);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+    }
+    .stat-donut {
+      flex: none;
+      width: 64px;
+      height: 64px;
+      position: relative;
+    }
+    .stat-donut svg { width: 100%; height: 100%; transform: rotate(-90deg); display: block; }
+    .stat-donut .track { fill: none; stroke: rgba(148,163,184,0.12); stroke-width: 6; }
+    .stat-donut .progress {
+      fill: none;
+      stroke: var(--color-destructive);
+      stroke-width: 6;
+      stroke-linecap: round;
+      stroke-dasharray: 188.5;
+      stroke-dashoffset: 68.4;
+      animation: donut-fill 1.4s cubic-bezier(0.4, 0, 0.2, 1) both;
+    }
+    @keyframes donut-fill {
+      from { stroke-dashoffset: 188.5; }
+      to   { stroke-dashoffset: 68.4; }
+    }
+    .stat-donut .pct-label {
+      position: absolute; inset: 0;
+      display: grid; place-items: center;
+      font-family: var(--font-display);
+      font-size: 0.92rem;
+      font-weight: 700;
+      color: var(--color-foreground);
+    }
+    .stat-text .big {
+      font-family: var(--font-display);
+      font-size: 1.55rem;
+      font-weight: 700;
+      color: var(--color-destructive);
+      line-height: 1;
+      margin-bottom: 4px;
+      letter-spacing: -0.02em;
+    }
+    .stat-text .lbl {
+      font-size: 0.78rem;
+      color: var(--color-muted-fg);
+      line-height: 1.35;
+    }
+    .loss-bars {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+      align-items: end;
+      height: 38px;
+      width: 60px;
+      flex: none;
+    }
+    .loss-bars span {
+      background: linear-gradient(180deg, #EF4444, #B91C1C);
+      border-radius: 2px 2px 0 0;
+      display: block;
+      animation: bar-grow 1s cubic-bezier(0.4, 0, 0.2, 1) both;
+      transform-origin: bottom;
+    }
+    .loss-bars span:nth-child(1) { height: 32%; animation-delay: 0s; }
+    .loss-bars span:nth-child(2) { height: 52%; animation-delay: 0.1s; }
+    .loss-bars span:nth-child(3) { height: 76%; animation-delay: 0.2s; }
+    .loss-bars span:nth-child(4) { height: 100%; animation-delay: 0.3s; }
+    @keyframes bar-grow {
+      from { transform: scaleY(0); }
+      to   { transform: scaleY(1); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .stat-donut .progress { animation: none; }
+      .loss-bars span { animation: none; }
+    }
+
+    /* ===== Cómo funciona — Pasos ===== */
+    .steps {
+      display: grid; gap: 20px;
+      grid-template-columns: 1fr;
+      counter-reset: step;
+    }
+    @media (min-width: 700px) { .steps { grid-template-columns: repeat(2, 1fr); } }
+    @media (min-width: 1024px) { .steps { grid-template-columns: repeat(5, 1fr); } }
+    .step {
+      position: relative;
+      padding: 28px;
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      counter-increment: step;
+    }
+    .step::before {
+      content: counter(step, decimal-leading-zero);
+      position: absolute; top: 18px; right: 22px;
+      font-family: var(--font-display);
+      font-weight: 700; font-size: 1.05rem;
+      color: rgba(34, 197, 94, 0.6);
+    }
+    .step .step-icon {
+      width: 48px; height: 48px;
+      display: grid; place-items: center;
+      background: var(--color-accent-soft);
+      color: var(--color-accent);
+      border-radius: 14px;
+      margin-bottom: 20px;
+    }
+    .step h3 { font-size: 1.125rem; margin-bottom: 6px; }
+    .step p { color: var(--color-muted-fg); margin: 0; font-size: 0.95rem; }
+
+    /* ===== Dashboard preview ===== */
+    .dash {
+      display: grid;
+      gap: 32px;
+      grid-template-columns: 1fr;
+      align-items: center;
+    }
+    @media (min-width: 960px) {
+      .dash { grid-template-columns: 0.85fr 1.15fr; gap: 56px; }
+    }
+    .dash-copy h2 { margin-bottom: 16px; }
+    .dash-copy p { color: var(--color-muted-fg); }
+    .dash-features {
+      list-style: none; padding: 0; margin: 24px 0 0;
+    }
+    .dash-features li {
+      display: flex; align-items: flex-start; gap: 12px;
+      padding-block: 8px;
+      color: var(--color-foreground);
+    }
+    .dash-features li svg {
+      flex: none;
+      color: var(--color-accent);
+      margin-top: 4px;
+    }
+    .dash-features li span { color: var(--color-muted-fg); }
+    .dash-features li strong { font-weight: 600; display: block; margin-bottom: 2px; }
+
+    .dash-mock {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      box-shadow: var(--shadow-md);
+    }
+    .dash-mock-bar {
+      display: flex; align-items: center; gap: 8px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--color-border);
+      margin-bottom: 18px;
+    }
+    .dash-mock-bar .dot-row { display: flex; gap: 6px; }
+    .dash-mock-bar .dot-row span {
+      width: 10px; height: 10px; border-radius: 50%;
+      background: var(--color-muted);
+    }
+    .dash-mock-bar .url {
+      flex: 1; text-align: center;
+      font-size: 0.8rem; color: var(--color-muted-fg);
+      background: var(--color-background);
+      padding: 4px 12px;
+      border-radius: 999px;
+      max-width: 70%;
+      margin-inline: auto;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .dash-kpis {
+      display: grid; gap: 10px;
+      grid-template-columns: repeat(3, 1fr);
+      margin-bottom: 18px;
+    }
+    .dash-kpi {
+      background: var(--color-background);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-sm);
+      padding: 12px 14px;
+    }
+    .dash-kpi .lbl {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--color-muted-fg);
+      margin-bottom: 6px;
+    }
+    .dash-kpi .val {
+      font-family: var(--font-display);
+      font-size: 1.35rem; font-weight: 700;
+      color: var(--color-foreground);
+      font-variant-numeric: tabular-nums;
+    }
+    .dash-kpi .delta {
+      font-size: 0.75rem;
+      color: var(--color-accent);
+      margin-left: 4px;
+    }
+    .dash-kpi .delta.down { color: #FB7185; }
+
+    .dash-chart-title {
+      display: flex; justify-content: space-between; align-items: baseline;
+      margin-bottom: 10px;
+    }
+    .dash-chart-title h4 {
+      font-family: var(--font-display);
+      font-size: 0.9rem; font-weight: 600;
+      margin: 0;
+    }
+    .dash-chart-title .legend {
+      font-size: 0.75rem; color: var(--color-muted-fg);
+      display: inline-flex; align-items: center; gap: 6px;
+    }
+    .dash-chart-title .legend::before {
+      content: ''; width: 10px; height: 10px;
+      background: var(--color-accent);
+      border-radius: 2px;
+    }
+    .dash-chart {
+      background: var(--color-background);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-sm);
+      padding: 16px 12px 8px;
+      margin-bottom: 16px;
+    }
+    .dash-chart svg { width: 100%; height: auto; display: block; }
+
+    /* Mini map inside dashboard mockup */
+    .dash-minimap {
+      background: var(--color-background);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-sm);
+      padding: 12px;
+      margin-bottom: 16px;
+    }
+    .dash-minimap h4 {
+      font-family: var(--font-display);
+      font-size: 0.85rem; font-weight: 600;
+      margin: 0 0 8px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .dash-minimap h4 .future-pill {
+      font-family: var(--font-body);
+      font-size: 0.65rem;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: rgba(245, 158, 11, 0.14);
+      border: 1px solid rgba(245, 158, 11, 0.35);
+      color: #FCD34D;
+    }
+    .dash-minimap svg { width: 100%; height: auto; display: block; border-radius: 6px; }
+
+    .dash-feed {
+      background: var(--color-background);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-sm);
+      padding: 12px;
+    }
+    .dash-feed h4 {
+      font-family: var(--font-display);
+      font-size: 0.85rem; font-weight: 600;
+      margin: 0 0 10px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .live-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--color-destructive);
+      box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.18);
+      animation: pulse-red 1.6s infinite;
+    }
+    @keyframes pulse-red {
+      0%, 100% { box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.18); }
+      50%      { box-shadow: 0 0 0 8px rgba(239, 68, 68, 0.06); }
+    }
+    .dash-feed ul { list-style: none; padding: 0; margin: 0; }
+    .dash-feed li {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 10px;
+      align-items: center;
+      padding: 8px 6px;
+      border-bottom: 1px dashed var(--color-border);
+      font-size: 0.82rem;
+    }
+    .dash-feed li:last-child { border-bottom: 0; }
+    .dash-feed .pill {
+      font-family: var(--font-display);
+      font-variant-numeric: tabular-nums;
+      font-size: 0.72rem;
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: var(--color-accent-soft);
+      color: #86EFAC;
+      font-weight: 600;
+    }
+    .dash-feed .meta {
+      color: var(--color-muted-fg);
+      font-variant-numeric: tabular-nums;
+      font-size: 0.75rem;
+    }
+    .dash-feed .play {
+      display: inline-grid; place-items: center;
+      width: 28px; height: 28px;
+      background: var(--color-accent-soft);
+      color: var(--color-accent);
+      border-radius: 50%;
+    }
+
+    /* ===== Hardware ===== */
+    .hardware-grid {
+      display: grid; gap: 16px;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    }
+    .hw-card {
+      padding: 24px;
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      transition: border-color var(--transition);
+    }
+    .hw-card:hover { border-color: rgba(34, 197, 94, 0.35); }
+    .hw-card .icon {
+      width: 52px; height: 52px;
+      display: grid; place-items: center;
+      background: var(--color-muted);
+      color: var(--color-accent);
+      border-radius: 14px;
+      margin-bottom: 16px;
+    }
+    .hw-card h3 { font-size: 1.05rem; margin-bottom: 4px; }
+    .hw-card .spec {
+      font-size: 0.85rem; color: var(--color-muted-fg);
+      margin: 0;
+    }
+
+    /* ===== Hardware hero image ===== */
+    .hw-hero {
+      position: relative;
+      margin-bottom: 40px;
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      border: 1px solid var(--color-border);
+      box-shadow: var(--shadow-md);
+      background: var(--color-surface);
+      aspect-ratio: 16 / 9;
+      max-height: 520px;
+    }
+    .hw-hero img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .hw-hero::after {
+      content: '';
+      position: absolute; inset: auto 0 0 0;
+      height: 50%;
+      background: linear-gradient(180deg, transparent, rgba(15,23,42,0.85));
+      pointer-events: none;
+    }
+    .hw-hero-caption {
+      position: absolute;
+      left: 20px; right: 20px; bottom: 20px;
+      z-index: 2;
+      display: flex; align-items: center; gap: 12px;
+      color: var(--color-foreground);
+    }
+    .hw-hero-caption .badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: var(--color-accent-soft);
+      border: 1px solid rgba(34,197,94,0.35);
+      color: #86EFAC;
+      padding: 6px 12px;
+      border-radius: 999px;
+      font-size: 0.78rem;
+      font-weight: 600;
+    }
+    .hw-hero-caption .txt {
+      font-size: 0.95rem;
+      color: rgba(248,250,252,0.9);
+    }
+
+    /* ===== Equipo ===== */
+    .team-wrap {
+      max-width: 880px;
+      margin: 0 auto;
+    }
+    .team-member {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      display: grid;
+      grid-template-columns: 1fr;
+      transition: border-color var(--transition), transform var(--transition);
+    }
+    @media (min-width: 760px) {
+      .team-member { grid-template-columns: 300px 1fr; }
+    }
+    .team-member:hover {
+      border-color: rgba(34, 197, 94, 0.35);
+    }
+    .team-photo-wrap {
+      position: relative;
+      aspect-ratio: 1;
+      overflow: hidden;
+      background: linear-gradient(135deg, var(--color-surface), var(--color-surface-2));
+    }
+    .team-photo-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .team-info {
+      padding: 32px;
+    }
+    .team-info h3 {
+      font-size: 1.5rem;
+      margin: 0 0 6px;
+    }
+    .team-info .role {
+      color: var(--color-accent);
+      font-weight: 600;
+      font-size: 0.9rem;
+      margin: 0 0 16px;
+    }
+    .team-info .bio {
+      font-size: 0.95rem;
+      color: var(--color-muted-fg);
+      margin: 0 0 18px;
+      line-height: 1.65;
+    }
+    .team-info .bio:last-child { margin-bottom: 0; }
+    .team-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 18px;
+    }
+    .team-tag {
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 12px;
+      background: var(--color-accent-soft);
+      border: 1px solid rgba(34,197,94,0.25);
+      color: #86EFAC;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+    }
+
+    /* ===== Instalación en terreno ===== */
+    .terreno {
+      display: grid;
+      gap: 20px;
+      grid-template-columns: 1fr;
+    }
+    @media (min-width: 720px) {
+      .terreno { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (min-width: 1024px) {
+      .terreno { grid-template-columns: repeat(3, 1fr); }
+    }
+    .terreno-card {
+      position: relative;
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      border: 1px solid var(--color-border);
+      background: var(--color-surface);
+      aspect-ratio: 4 / 5;
+      box-shadow: var(--shadow-md);
+      transition: transform var(--transition), border-color var(--transition);
+    }
+    .terreno-card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(34,197,94,0.4);
+    }
+    .terreno-card img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: transform 600ms ease;
+    }
+    .terreno-card:hover img { transform: scale(1.04); }
+    .terreno-card::after {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(180deg, transparent 40%, rgba(15,23,42,0.92) 100%);
+      pointer-events: none;
+    }
+    .terreno-card .caption {
+      position: absolute;
+      left: 20px; right: 20px; bottom: 20px;
+      z-index: 2;
+    }
+    .terreno-card .tag {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: rgba(15,23,42,0.6);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border: 1px solid var(--color-border);
+      color: var(--color-accent);
+      padding: 5px 10px;
+      border-radius: 999px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+    .terreno-card h3 {
+      font-size: 1.15rem;
+      color: var(--color-foreground);
+      margin: 0 0 4px;
+    }
+    .terreno-card p {
+      font-size: 0.85rem;
+      color: rgba(248,250,252,0.8);
+      margin: 0;
+      line-height: 1.5;
+    }
+
+    /* Fallback if image fails to load */
+    .terreno-card .img-fallback {
+      width: 100%; height: 100%;
+      display: grid; place-items: center;
+      background: linear-gradient(135deg, var(--color-surface), var(--color-surface-2));
+      color: var(--color-muted-fg);
+      font-size: 0.8rem;
+      text-align: center;
+      padding: 20px;
+    }
+
+    /* ===== Casos de uso ===== */
+    .use-cases {
+      display: grid; gap: 24px;
+      grid-template-columns: 1fr;
+    }
+    @media (min-width: 900px) { .use-cases { grid-template-columns: 1fr 1fr; } }
+    .uc-card {
+      padding: 36px;
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      position: relative; overflow: hidden;
+    }
+    .uc-card::before {
+      content: '';
+      position: absolute; inset: -40% -40% auto auto;
+      width: 280px; height: 280px;
+      background: radial-gradient(circle, rgba(34, 197, 94, 0.18), transparent 60%);
+      pointer-events: none;
+    }
+    .uc-card .icon {
+      width: 56px; height: 56px;
+      display: grid; place-items: center;
+      background: var(--color-accent-soft);
+      color: var(--color-accent);
+      border-radius: 16px;
+      margin-bottom: 20px;
+    }
+    .uc-card h3 { font-size: 1.5rem; }
+    .uc-card ul {
+      list-style: none; padding: 0; margin: 16px 0 0;
+      color: var(--color-muted-fg);
+    }
+    .uc-card li {
+      display: flex; align-items: flex-start; gap: 10px;
+      padding-block: 6px;
+    }
+    .uc-card li svg { flex: none; color: var(--color-accent); margin-top: 3px; }
+
+    /* ===== Beneficios ===== */
+    .benefits {
+      display: grid; gap: 16px;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    }
+    .benefit {
+      padding: 24px;
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+    }
+    .benefit .num {
+      font-family: var(--font-display);
+      font-size: 2.25rem; font-weight: 700;
+      color: var(--color-accent);
+      line-height: 1;
+      margin-bottom: 8px;
+    }
+    .benefit p { margin: 0; color: var(--color-muted-fg); }
+
+    /* ===== CTA Final ===== */
+    .cta {
+      padding: clamp(40px, 6vw, 72px);
+      background:
+        radial-gradient(ellipse 100% 80% at 50% 0%, rgba(34, 197, 94, 0.15), transparent 65%),
+        var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-xl);
+      text-align: center;
+    }
+    .cta h2 { max-width: 720px; margin-inline: auto; }
+    .cta p { color: var(--color-muted-fg); max-width: 560px; margin-inline: auto 28px; }
+
+    /* ===== Formulario contacto ===== */
+    .contact {
+      display: grid; gap: 32px;
+      grid-template-columns: 1fr;
+      align-items: start;
+    }
+    @media (min-width: 900px) { .contact { grid-template-columns: 1fr 1.1fr; gap: 56px; } }
+    .form {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: 32px;
+    }
+    .field { display: flex; flex-direction: column; margin-bottom: 18px; }
+    .field label {
+      font-size: 0.9rem; font-weight: 500;
+      color: var(--color-foreground);
+      margin-bottom: 8px;
+    }
+    .field .req { color: var(--color-accent); margin-left: 2px; }
+    .field input, .field select, .field textarea {
+      width: 100%;
+      padding: 14px 16px;
+      background: var(--color-background);
+      border: 1px solid var(--color-border-strong);
+      border-radius: var(--radius-sm);
+      color: var(--color-foreground);
+      font: inherit;
+      min-height: 48px;
+      transition: border-color var(--transition), box-shadow var(--transition);
+    }
+    .field textarea { min-height: 120px; resize: vertical; }
+    .field input:focus, .field select:focus, .field textarea:focus {
+      outline: none;
+      border-color: var(--color-accent);
+      box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.18);
+    }
+    .field .helper {
+      font-size: 0.8rem; color: var(--color-muted-fg);
+      margin-top: 6px;
+    }
+    .form .btn-primary { width: 100%; margin-top: 8px; }
+    .form-success {
+      display: none;
+      padding: 16px;
+      border-radius: var(--radius-sm);
+      background: var(--color-accent-soft);
+      border: 1px solid rgba(34, 197, 94, 0.35);
+      color: #86EFAC;
+      margin-bottom: 16px;
+    }
+    .form-success.show { display: block; }
+
+    .contact-info h2 { margin-bottom: 16px; }
+    .contact-info ul { list-style: none; padding: 0; margin: 24px 0 0; }
+    .contact-info li {
+      display: flex; align-items: flex-start; gap: 14px;
+      padding-block: 10px;
+      color: var(--color-muted-fg);
+    }
+    .contact-info li .icon {
+      width: 40px; height: 40px;
+      flex: none;
+      display: grid; place-items: center;
+      background: var(--color-accent-soft);
+      color: var(--color-accent);
+      border-radius: 12px;
+    }
+    .contact-info li strong { color: var(--color-foreground); display: block; }
+
+    /* ===== Footer ===== */
+    .footer {
+      padding-block: 40px;
+      border-top: 1px solid var(--color-border);
+      color: var(--color-muted-fg);
+      font-size: 0.9rem;
+    }
+    .footer-inner {
+      display: flex; flex-wrap: wrap; gap: 16px;
+      justify-content: space-between; align-items: center;
+    }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#main">Saltar al contenido principal</a>
+
+  <!-- HEADER -->
+  <header class="header">
+    <div class="container header-inner">
+      <a class="logo" href="#" aria-label="Canopy GuardIAn — Inicio">
+        <span class="logo-mark" aria-hidden="true">
+          <svg width="28" height="28" viewBox="0 0 40 40" fill="none">
+            <!-- Hexagonal canopy -->
+            <polygon points="20,4 32,11 32,23 20,30 8,23 8,11"
+                     fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+            <!-- Internal grid lines (subtle) -->
+            <g stroke="currentColor" stroke-width="1" opacity="0.45">
+              <line x1="20" y1="4"  x2="20" y2="30"/>
+              <line x1="8"  y1="11" x2="32" y2="23"/>
+              <line x1="32" y1="11" x2="8"  y2="23"/>
+            </g>
+            <!-- AI neural nodes (accent) -->
+            <g fill="#2DD4BF" stroke="none">
+              <circle cx="14" cy="14" r="2"/>
+              <circle cx="26" cy="14" r="2"/>
+              <circle cx="20" cy="22" r="2"/>
+            </g>
+            <g stroke="#2DD4BF" stroke-width="1.5">
+              <line x1="14" y1="14" x2="26" y2="14"/>
+              <line x1="14" y1="14" x2="20" y2="22"/>
+              <line x1="26" y1="14" x2="20" y2="22"/>
+            </g>
+            <!-- Trunk + base -->
+            <line x1="20" y1="30" x2="20" y2="36" stroke="currentColor" stroke-width="2"/>
+            <line x1="15" y1="36" x2="25" y2="36" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </span>
+        <span class="brand-name">Canopy Guard<span class="brand-accent">IA</span>n</span>
+      </a>
+      <nav class="nav" aria-label="Navegación principal">
+        <a href="#problema">El Problema</a>
+        <a href="#como-funciona">Solución</a>
+        <a href="#estado">Roadmap</a>
+        <a href="#hardware">Hardware</a>
+        <a href="#equipo">Equipo</a>
+        <a href="#contacto">Contacto</a>
+      </nav>
+      <a class="btn btn-primary" href="#contacto">Postulación CORFO</a>
+    </div>
+  </header>
+
+  <main id="main">
+    <!-- HERO -->
+    <section class="hero">
+      <div class="container">
+        <div class="hero-grid">
+          <div class="hero-text">
+            <span class="hero-eyebrow"><span class="dot" aria-hidden="true"></span>Postulación CORFO Semilla Inicia Biobío 2026</span>
+            <h1>Proteger bosques con <span class="accent">IA acústica de bajo costo</span>.</h1>
+            <p class="hero-sub">Estamos desarrollando Canopy GuardIAn, un sistema innovador de detección de tala ilegal que combina un modelo de aprendizaje profundo embebido, hardware accesible y energía solar. Postulamos al fondo <strong style="color: var(--color-foreground); font-weight: 500;">CORFO Semilla Inicia Biobío</strong> para validar el MVP en bosque nativo y plantaciones, orientado a la industria forestal y áreas protegidas de Chile.</p>
+            <div class="hero-ctas">
+              <a class="btn btn-primary" href="#contacto">Solicitar información</a>
+              <a class="btn btn-ghost" href="#problema">Entender el desafío</a>
+            </div>
+            <div class="hero-meta" role="list">
+              <div class="hero-meta-item" role="listitem">
+                <div class="num">Fase</div>
+                <div class="lbl">MVP en desarrollo · pre-piloto</div>
+              </div>
+              <div class="hero-meta-item" role="listitem">
+                <div class="num">Fondo</div>
+                <div class="lbl">CORFO Semilla Inicia Biobío 2026</div>
+              </div>
+              <div class="hero-meta-item" role="listitem">
+                <div class="num">Sector</div>
+                <div class="lbl">Industria forestal · Áreas protegidas</div>
+              </div>
+              <div class="hero-meta-item" role="listitem">
+                <div class="num">Ubicación</div>
+                <div class="lbl">Región del Biobío, Chile</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="hero-image reveal">
+            <img
+              src="https://images.unsplash.com/photo-1473773508845-188df298d2d1?auto=format&fit=crop&w=1200&q=80"
+              alt="Bosque nativo con neblina visto desde arriba — entorno típico donde Canopy GuardIAn opera"
+              width="1200" height="1500" loading="eager" />
+            <div class="hero-image-tag">
+              <span class="icon" aria-hidden="true">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="10"/></svg>
+              </span>
+              <div class="txt">
+                <strong>Prototipo en desarrollo</strong>
+                Validación en campo en marcha
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PARALLAX 1 -->
+    <section class="parallax" style="background-image: url('https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=1920&q=80');" aria-label="Imagen de bosque denso">
+      <div class="parallax-content reveal">
+        <h2>La tala ilegal es una crisis que <span class="accent">nos toca proteger</span>.</h2>
+        <p>En Chile, especialmente en la Región del Biobío, la depredación de bosques nativos sigue ocurriendo sin consecuencias efectivas. Queremos cambiar eso con tecnología inteligente, accesible y escalable.</p>
+      </div>
+    </section>
+
+    <!-- BENTO: El Problema -->
+    <section class="section" id="problema" aria-labelledby="el-problema">
+      <div class="container">
+        <div class="section-head reveal">
+          <span class="section-eyebrow">El Desafío</span>
+          <h2 id="el-problema">Una crisis forestal que requiere respuesta tecnológica inmediata.</h2>
+          <p class="section-sub">La tala ilegal y el robo de madera representan una amenaza crítica para bosques nativos, empresas forestales responsables y la economía nacional. Los números son alarmantes, y las soluciones actuales son insuficientes.</p>
+        </div>
+
+        <div class="bento">
+          <article class="bento-card b-1">
+            <div class="icon" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 0 2-2 2 2 0 0 0-2 2"/></svg>
+            </div>
+            <h3>Tala ilegal: pérdidas masivas en Biobío</h3>
+            <p>Entre 2018-2021, el robo de madera acumuló pérdidas por <strong>US$133 millones</strong> en Chile. La Región del Biobío concentra el <strong>63,7% del PIB forestal</strong> nacional (17,3% de su PIB regional) — es el epicentro del problema.</p>
+
+            <div class="problem-stats" role="img" aria-label="63,7% del PIB forestal nacional se concentra en el Biobío. Pérdidas acumuladas de US$133 millones entre 2018 y 2021.">
+              <div class="stat-block">
+                <div class="stat-donut" aria-hidden="true">
+                  <svg viewBox="0 0 70 70">
+                    <circle class="track" cx="35" cy="35" r="30"/>
+                    <circle class="progress" cx="35" cy="35" r="30"/>
+                  </svg>
+                  <span class="pct-label">63,7%</span>
+                </div>
+                <div class="stat-text">
+                  <div class="big">PIB forestal</div>
+                  <div class="lbl">Biobío sobre total nacional</div>
+                </div>
+              </div>
+
+              <div class="stat-block">
+                <div class="loss-bars" aria-hidden="true">
+                  <span></span><span></span><span></span><span></span>
+                </div>
+                <div class="stat-text">
+                  <div class="big">US$133M</div>
+                  <div class="lbl">Pérdidas acumuladas 2018–2021</div>
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <article class="bento-card b-2">
+            <div class="icon" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>
+            </div>
+            <h3>Monitoreo limitado</h3>
+            <p>Guardaparques y guardabosques operan con rondas manuales infrecuentes. Miles de hectáreas carecen de vigilancia constante — la actividad ilegal ocurre en la oscuridad, sin testigos.</p>
+          </article>
+
+          <article class="bento-card b-3">
+            <div class="icon" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+            </div>
+            <h3>Tecnología cara</h3>
+            <p>Los sistemas de monitoreo forestal convencional (drones, vigilancia satelital, torres) requieren presupuestos muy altos — inaccesibles para ONGs y organismos como CONAF.</p>
+          </article>
+
+          <article class="bento-card b-4">
+            <div class="icon" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-4M20.49 15a9 9 0 0 1-14.85 4"/></svg>
+            </div>
+            <h3>Respuesta lenta</h3>
+            <p>Cuando se detecta actividad ilegal, a menudo es demasiado tarde para prevenir el daño. Falta una solución que alerte en tiempo real y permita intervención inmediata.</p>
+          </article>
+
+          <article class="bento-card b-5">
+            <div class="icon" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            </div>
+            <h3>Sin evidencia verificable</h3>
+            <p>El robo se documenta débilmente. No hay registros auditables, audio capturado ni geolocalización exacta que permita procesos sancionatorios efectivos.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ESTADO DEL PROYECTO -->
+    <section class="section" id="estado" aria-labelledby="estado-title">
+      <div class="container">
+        <div class="lowcost">
+          <div class="reveal">
+            <span class="section-eyebrow">Roadmap del proyecto</span>
+            <h2 id="estado-title">Del MVP al despliegue en terreno.</h2>
+            <p class="muted">Tenemos el MVP funcional. El siguiente paso es validar su desempeño en condiciones reales: primero en <strong style="color: var(--color-foreground);">bosque nativo</strong>, luego en <strong style="color: var(--color-foreground);">plantación forestal</strong>, y a partir de esa retroalimentación, iterar el sistema antes de escalar.</p>
+            <p class="muted">El enfoque técnico ya fue desarrollado por el equipo en un proyecto paralelo: un sistema acústico de bajo costo para detectar pesca ilegal con dinamita en la Reserva Nacional de Paracas (Perú), implementado desde Mar Futura Foundation. Canopy GuardIAn traslada esa misma arquitectura al ámbito forestal.</p>
+            <p class="muted">Postulamos a <strong style="color: var(--color-foreground);">CORFO Semilla Inicia Biobío 2026</strong> para financiar esta etapa de validación y refinamiento del prototipo.</p>
+          </div>
+
+          <div class="lowcost-card reveal">
+            <span class="section-eyebrow">Plan de trabajo</span>
+            <h3 style="margin-bottom: 24px;">Fases del proyecto</h3>
+            <div class="lowcost-compare">
+              <div class="lc-row">
+                <div class="lc-side">
+                  <div class="lbl">Fase 1</div>
+                  <div class="val">Laboratorio</div>
+                </div>
+                <div class="lc-vs">●</div>
+                <div class="lc-side us">
+                  <div class="lbl">Estado actual</div>
+                  <div class="val">En curso</div>
+                </div>
+              </div>
+              <div class="lc-row">
+                <div class="lc-side">
+                  <div class="lbl">Fase 2</div>
+                  <div class="val">Bosque nativo</div>
+                </div>
+                <div class="lc-vs">→</div>
+                <div class="lc-side us">
+                  <div class="lbl">Próximo</div>
+                  <div class="val">1ª prueba en campo</div>
+                </div>
+              </div>
+              <div class="lc-row">
+                <div class="lc-side">
+                  <div class="lbl">Fase 3</div>
+                  <div class="val">Plantación</div>
+                </div>
+                <div class="lc-vs">→</div>
+                <div class="lc-side us">
+                  <div class="lbl">Siguiente</div>
+                  <div class="val">2ª prueba en campo</div>
+                </div>
+              </div>
+              <div class="lc-row">
+                <div class="lc-side">
+                  <div class="lbl">Fase 4</div>
+                  <div class="val">Iteración</div>
+                </div>
+                <div class="lc-vs">→</div>
+                <div class="lc-side us">
+                  <div class="lbl">Cierre</div>
+                  <div class="val">Mejoras + escala</div>
+                </div>
+              </div>
+            </div>
+            <p class="muted" style="font-size: 0.8rem; margin: 18px 0 0;">Postulación en curso a CORFO Semilla Inicia Biobío 2026. Plan: probar en bosque nativo y plantación, recoger feedback, refinar el sistema.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CÓMO FUNCIONA / SOLUCIÓN -->
+    <section class="section" id="como-funciona" aria-labelledby="hf-title" style="background: linear-gradient(180deg, transparent, rgba(26, 36, 56, 0.5), transparent);">
+      <div class="container">
+        <div class="section-head reveal">
+          <span class="section-eyebrow">Nuestra Solución</span>
+          <h2 id="hf-title">Detección acústica con IA — prototipo validado en terreno.</h2>
+        </div>
+        <ol class="steps" aria-label="Flujo de detección">
+          <li class="step">
+            <div class="step-icon" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v4M8 23h8"/></svg>
+            </div>
+            <h3>Escucha continua</h3>
+            <p>El micrófono de alta precisión capta el sonido ambiental 24/7 en un radio superior a 1 km.</p>
+          </li>
+          <li class="step">
+            <div class="step-icon" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M9 9h6v6H9z"/></svg>
+            </div>
+            <h3>Análisis con IA</h3>
+            <p>La Raspberry Pi procesa el audio localmente con un modelo entrenado para identificar motosierras.</p>
+          </li>
+          <li class="step">
+            <div class="step-icon" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12h3l3-9 4 18 3-9h7"/></svg>
+            </div>
+            <h3>Detección confirmada</h3>
+            <p>Si el patrón coincide, el sistema genera una alerta con timestamp, ubicación GPS y nivel de confianza.</p>
+          </li>
+          <li class="step">
+            <div class="step-icon" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+            </div>
+            <h3>Alerta por WhatsApp</h3>
+            <p>Vía módem 4G, el sistema envía la alerta a guardaparques y central. Respuesta inmediata.</p>
+          </li>
+          <li class="step">
+            <div class="step-icon" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 14l3-3 4 4 5-6"/></svg>
+            </div>
+            <h3>Registro y análisis</h3>
+            <p>Cada evento se sube al dashboard con audio, GPS y hora. Los rangers visualizan tendencias e identifican las horas críticas.</p>
+          </li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- DASHBOARD -->
+    <section class="section" id="dashboard" aria-labelledby="dash-title">
+      <div class="container">
+        <div class="dash">
+          <div class="dash-copy">
+            <span class="section-eyebrow">Dashboard · mockup conceptual</span>
+            <h2 id="dash-title">Panel de control centralizado — diseño propuesto.</h2>
+            <p>El sistema incluirá un dashboard donde cada detección quede registrada con audio capturado, coordenadas GPS y timestamp. Además, un <strong style="color: var(--color-foreground);">mapa interactivo</strong> permitirá identificar de inmediato qué sensor activó la alerta. En fases posteriores del proyecto —con un array de sensores desplegados— se podrá <strong style="color: var(--color-foreground);">triangular la ubicación exacta</strong> del evento de tala, no solo el sensor más cercano.</p>
+            <ul class="dash-features">
+              <li>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                <div><strong>Mapa de sensores</strong><span>Identifica al instante qué sensor detectó la motosierra y su ubicación GPS.</span></div>
+              </li>
+              <li>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
+                <div><strong>Triangulación futura</strong><span>Con varios sensores activos podremos calcular el punto exacto del evento, no solo el sensor más cercano.</span></div>
+              </li>
+              <li>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+                <div><strong>Audio de evidencia</strong><span>Reproduce el fragmento capturado para confirmar cada alerta.</span></div>
+              </li>
+              <li>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 14l3-3 4 4 5-6"/></svg>
+                <div><strong>Estadísticas en tiempo real</strong><span>Detecciones por día, hora, sensor y zona — sin esperas.</span></div>
+              </li>
+              <li>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+                <div><strong>Exportable</strong><span>Reportes en PDF o CSV listos para informes y procesos legales.</span></div>
+              </li>
+            </ul>
+          </div>
+
+          <div class="dash-mock" role="img" aria-label="Vista conceptual del dashboard de monitoreo">
+            <div class="dash-mock-bar">
+              <div class="dot-row" aria-hidden="true"><span></span><span></span><span></span></div>
+              <div class="url">canopyguardian.cl/panel · mockup</div>
+            </div>
+
+            <div class="dash-kpis">
+              <div class="dash-kpi">
+                <div class="lbl">Detecciones (ejemplo)</div>
+                <div class="val">12<span class="delta">demo</span></div>
+              </div>
+              <div class="dash-kpi">
+                <div class="lbl">Sensores conceptuales</div>
+                <div class="val">24/24</div>
+              </div>
+              <div class="dash-kpi">
+                <div class="lbl">Respuesta esperada</div>
+                <div class="val">&lt;10s</div>
+              </div>
+            </div>
+
+            <div class="dash-chart-title">
+              <h4>Detecciones por hora · vista conceptual</h4>
+              <span class="legend">Eventos (mockup)</span>
+            </div>
+            <div class="dash-chart">
+              <svg viewBox="0 0 360 140" preserveAspectRatio="none" role="img" aria-label="Gráfico de barras de detecciones por hora del día. Picos entre las 4 y 7 de la madrugada y entre las 19 y 22 horas.">
+                <!-- Gridlines -->
+                <g stroke="rgba(148,163,184,0.12)" stroke-width="1">
+                  <line x1="0" y1="20"  x2="360" y2="20"/>
+                  <line x1="0" y1="55"  x2="360" y2="55"/>
+                  <line x1="0" y1="90"  x2="360" y2="90"/>
+                  <line x1="0" y1="120" x2="360" y2="120"/>
+                </g>
+                <!-- Bars (24 hours) -->
+                <g fill="#22C55E">
+                  <!-- bar width=10, gap=5, start x=6 -->
+                  <rect x="6"   y="105" width="10" height="15"  rx="2"/>
+                  <rect x="21"  y="110" width="10" height="10"  rx="2"/>
+                  <rect x="36"  y="108" width="10" height="12"  rx="2"/>
+                  <rect x="51"  y="90"  width="10" height="30"  rx="2"/>
+                  <rect x="66"  y="55"  width="10" height="65"  rx="2"/>
+                  <rect x="81"  y="38"  width="10" height="82"  rx="2"/>
+                  <rect x="96"  y="48"  width="10" height="72"  rx="2"/>
+                  <rect x="111" y="78"  width="10" height="42"  rx="2"/>
+                  <rect x="126" y="95"  width="10" height="25"  rx="2"/>
+                  <rect x="141" y="100" width="10" height="20"  rx="2"/>
+                  <rect x="156" y="105" width="10" height="15"  rx="2"/>
+                  <rect x="171" y="110" width="10" height="10"  rx="2"/>
+                  <rect x="186" y="108" width="10" height="12"  rx="2"/>
+                  <rect x="201" y="106" width="10" height="14"  rx="2"/>
+                  <rect x="216" y="100" width="10" height="20"  rx="2"/>
+                  <rect x="231" y="95"  width="10" height="25"  rx="2"/>
+                  <rect x="246" y="85"  width="10" height="35"  rx="2"/>
+                  <rect x="261" y="68"  width="10" height="52"  rx="2"/>
+                  <rect x="276" y="42"  width="10" height="78"  rx="2"/>
+                  <rect x="291" y="30"  width="10" height="90"  rx="2"/>
+                  <rect x="306" y="35"  width="10" height="85"  rx="2"/>
+                  <rect x="321" y="60"  width="10" height="60"  rx="2"/>
+                  <rect x="336" y="92"  width="10" height="28"  rx="2"/>
+                  <rect x="350" y="105" width="8"  height="15"  rx="2"/>
+                </g>
+                <!-- X-axis labels -->
+                <g fill="#94A3B8" font-family="DM Sans, sans-serif" font-size="8" text-anchor="middle">
+                  <text x="11"  y="135">0</text>
+                  <text x="71"  y="135">4</text>
+                  <text x="131" y="135">8</text>
+                  <text x="191" y="135">12</text>
+                  <text x="251" y="135">16</text>
+                  <text x="311" y="135">20</text>
+                  <text x="354" y="135">23</text>
+                </g>
+              </svg>
+            </div>
+
+            <div class="dash-minimap" role="img" aria-label="Vista conceptual del mapa de sensores en el dashboard. Sensor SN-04 con alerta activa, otros sensores en estado normal.">
+              <h4>
+                <span>Mapa de sensores</span>
+                <span class="future-pill">Triangulación · roadmap</span>
+              </h4>
+              <svg viewBox="0 0 300 120" preserveAspectRatio="xMidYMid slice">
+                <defs>
+                  <linearGradient id="mm-bg" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#1A2438"/>
+                    <stop offset="100%" stop-color="#0F172A"/>
+                  </linearGradient>
+                  <pattern id="mm-grid" width="20" height="20" patternUnits="userSpaceOnUse">
+                    <path d="M 20 0 L 0 0 0 20" fill="none" stroke="rgba(148,163,184,0.07)" stroke-width="1"/>
+                  </pattern>
+                </defs>
+                <rect width="300" height="120" fill="url(#mm-bg)"/>
+                <rect width="300" height="120" fill="url(#mm-grid)"/>
+
+                <!-- Forest patches -->
+                <g fill="rgba(34,197,94,0.10)">
+                  <path d="M 30 25 Q 55 15 80 30 Q 95 55 75 70 Q 45 75 30 55 Z"/>
+                  <path d="M 130 45 Q 165 30 190 50 Q 200 75 175 90 Q 140 95 125 70 Z"/>
+                  <path d="M 220 20 Q 255 15 275 40 Q 280 70 260 85 Q 230 90 215 60 Z"/>
+                </g>
+
+                <!-- Rivers -->
+                <path d="M 0 90 Q 80 75 150 85 T 300 80"
+                      fill="none" stroke="rgba(59,130,246,0.25)" stroke-width="1.5" stroke-linecap="round"/>
+
+                <!-- Sensors OK -->
+                <g>
+                  <g transform="translate(55,45)">
+                    <circle r="4" fill="#22C55E" stroke="#0F172A" stroke-width="1.5"/>
+                    <text x="8" y="3" fill="#94A3B8" font-family="DM Sans,sans-serif" font-size="7">SN-01</text>
+                  </g>
+                  <g transform="translate(155,65)">
+                    <circle r="4" fill="#22C55E" stroke="#0F172A" stroke-width="1.5"/>
+                    <text x="8" y="3" fill="#94A3B8" font-family="DM Sans,sans-serif" font-size="7">SN-02</text>
+                  </g>
+                  <g transform="translate(245,50)">
+                    <circle r="4" fill="#22C55E" stroke="#0F172A" stroke-width="1.5"/>
+                    <text x="8" y="3" fill="#94A3B8" font-family="DM Sans,sans-serif" font-size="7">SN-03</text>
+                  </g>
+                </g>
+
+                <!-- Active alert sensor SN-04 -->
+                <g transform="translate(110,90)">
+                  <circle class="map-ripple" r="5" fill="none" stroke="#EF4444" stroke-width="1.5"/>
+                  <circle class="map-ripple map-ripple-2" r="5" fill="none" stroke="#EF4444" stroke-width="1.5"/>
+                  <circle r="5" fill="#EF4444" stroke="#0F172A" stroke-width="1.5"/>
+                  <text x="9" y="3" fill="#FCA5A5" font-family="DM Sans,sans-serif" font-size="7" font-weight="700">SN-04 · alerta</text>
+                </g>
+
+                <!-- Legend -->
+                <g transform="translate(8,12)" font-family="DM Sans,sans-serif" font-size="6.5" fill="#94A3B8">
+                  <circle cx="4" cy="-2" r="3" fill="#22C55E"/>
+                  <text x="11" y="1">Activo</text>
+                  <circle cx="40" cy="-2" r="3" fill="#EF4444"/>
+                  <text x="47" y="1">Alerta</text>
+                </g>
+              </svg>
+            </div>
+
+            <div class="dash-feed">
+              <h4><span class="live-dot" aria-hidden="true"></span>Actividad (ejemplo de visualización)</h4>
+              <ul>
+                <li>
+                  <span class="pill">SN-04</span>
+                  <span class="meta">Sector Lago · -39.41, -71.84</span>
+                  <span class="play" aria-label="Reproducir audio capturado">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 4 20 12 6 20 6 4"/></svg>
+                  </span>
+                </li>
+                <li>
+                  <span class="pill">SN-11</span>
+                  <span class="meta">Quebrada Norte · hace 8 min</span>
+                  <span class="play" aria-label="Reproducir audio capturado">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 4 20 12 6 20 6 4"/></svg>
+                  </span>
+                </li>
+                <li>
+                  <span class="pill">SN-02</span>
+                  <span class="meta">Ladera Sur · hace 27 min</span>
+                  <span class="play" aria-label="Reproducir audio capturado">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 4 20 12 6 20 6 4"/></svg>
+                  </span>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- MAPA / FLUJO DE DETECCIÓN -->
+    <section class="section" id="mapa" aria-labelledby="map-title">
+      <div class="container">
+        <div class="section-head reveal">
+          <span class="section-eyebrow">Detección georreferenciada · concepto</span>
+          <h2 id="map-title">Del bosque al teléfono del operador en segundos.</h2>
+          <p class="section-sub">Diagrama conceptual del flujo previsto: cada sensor reporta su posición exacta. Al detectar una motosierra, la ubicación y el audio capturado viajan directo al equipo más cercano vía WhatsApp.</p>
+        </div>
+
+        <div class="mapflow">
+          <div class="map-wrap reveal">
+            <svg class="map" viewBox="0 0 640 400" role="img" aria-label="Mapa esquemático de un área protegida con varios sensores Canopy GuardIAn distribuidos. Uno de ellos detectó actividad y envía una alerta señalada con una línea punteada animada hacia un equipo de guardaparques.">
+              <!-- Background terrain -->
+              <defs>
+                <linearGradient id="terrain" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#1A2438"/>
+                  <stop offset="100%" stop-color="#0F172A"/>
+                </linearGradient>
+                <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+                  <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(148,163,184,0.07)" stroke-width="1"/>
+                </pattern>
+              </defs>
+              <rect width="640" height="400" fill="url(#terrain)"/>
+              <rect width="640" height="400" fill="url(#grid)"/>
+
+              <!-- Rivers / paths -->
+              <path d="M 0 280 Q 120 240 220 270 T 440 250 T 640 230"
+                    fill="none" stroke="rgba(59,130,246,0.25)" stroke-width="3" stroke-linecap="round"/>
+              <path d="M 80 0 Q 110 80 90 160 T 130 320 T 110 400"
+                    fill="none" stroke="rgba(59,130,246,0.15)" stroke-width="2" stroke-linecap="round"/>
+
+              <!-- Forest patches (organic shapes) -->
+              <g fill="rgba(34,197,94,0.10)">
+                <path d="M 60 60 Q 100 30 140 60 Q 180 90 160 130 Q 130 160 90 150 Q 50 130 60 60 Z"/>
+                <path d="M 240 100 Q 290 70 340 100 Q 380 140 350 180 Q 300 200 250 180 Q 220 140 240 100 Z"/>
+                <path d="M 420 60 Q 480 50 520 90 Q 550 140 520 180 Q 470 200 430 170 Q 400 130 420 60 Z"/>
+                <path d="M 100 220 Q 150 200 200 230 Q 230 280 200 320 Q 150 340 110 320 Q 80 270 100 220 Z"/>
+                <path d="M 360 280 Q 410 260 460 290 Q 490 340 460 370 Q 410 390 370 370 Q 340 330 360 280 Z"/>
+              </g>
+
+              <!-- Sensor nodes (OK) -->
+              <g>
+                <!-- SN-01 -->
+                <g transform="translate(120,110)">
+                  <circle r="7" fill="#22C55E" stroke="#0F172A" stroke-width="2"/>
+                  <text x="14" y="4" fill="#94A3B8" font-family="DM Sans,sans-serif" font-size="11">SN-01</text>
+                </g>
+                <!-- SN-02 -->
+                <g transform="translate(290,150)">
+                  <circle r="7" fill="#22C55E" stroke="#0F172A" stroke-width="2"/>
+                  <text x="14" y="4" fill="#94A3B8" font-family="DM Sans,sans-serif" font-size="11">SN-02</text>
+                </g>
+                <!-- SN-03 -->
+                <g transform="translate(470,120)">
+                  <circle r="7" fill="#22C55E" stroke="#0F172A" stroke-width="2"/>
+                  <text x="14" y="4" fill="#94A3B8" font-family="DM Sans,sans-serif" font-size="11">SN-03</text>
+                </g>
+                <!-- SN-05 -->
+                <g transform="translate(420,330)">
+                  <circle r="7" fill="#22C55E" stroke="#0F172A" stroke-width="2"/>
+                  <text x="14" y="4" fill="#94A3B8" font-family="DM Sans,sans-serif" font-size="11">SN-05</text>
+                </g>
+              </g>
+
+              <!-- Active alert sensor (SN-04) -->
+              <g transform="translate(160,280)">
+                <circle class="map-ripple"   r="8" fill="none" stroke="#EF4444" stroke-width="2"/>
+                <circle class="map-ripple map-ripple-2" r="8" fill="none" stroke="#EF4444" stroke-width="2"/>
+                <circle r="9" fill="#EF4444" stroke="#0F172A" stroke-width="2"/>
+                <text x="14" y="4" fill="#FCA5A5" font-family="DM Sans,sans-serif" font-size="11" font-weight="700">SN-04 · alerta</text>
+              </g>
+
+              <!-- Ranger station -->
+              <g transform="translate(560,330)">
+                <rect x="-14" y="-14" width="28" height="28" rx="6" fill="#22C55E" stroke="#0F172A" stroke-width="2"/>
+                <g transform="translate(-7,-7)" fill="none" stroke="#052e16" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M7 1a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+                  <path d="M11 7v3a4 4 0 0 1-8 0v-3"/>
+                  <path d="M7 14v3M4 17h6"/>
+                </g>
+                <text x="22" y="4" fill="#86EFAC" font-family="DM Sans,sans-serif" font-size="11" font-weight="600">Rangers</text>
+              </g>
+
+              <!-- Detection route line (animated dashed) -->
+              <path class="map-route"
+                    d="M 160 280 Q 280 200 400 240 T 560 330"
+                    fill="none" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round"/>
+
+              <!-- Compass -->
+              <g transform="translate(40,40)" fill="#94A3B8" font-family="DM Sans,sans-serif" font-size="10">
+                <circle r="14" fill="none" stroke="rgba(148,163,184,0.3)"/>
+                <text x="0" y="-18" text-anchor="middle">N</text>
+                <path d="M 0 -10 L 4 8 L 0 4 L -4 8 Z" fill="#22C55E"/>
+              </g>
+
+              <!-- Scale bar -->
+              <g transform="translate(440,375)" fill="#94A3B8" font-family="DM Sans,sans-serif" font-size="10">
+                <line x1="0" y1="0" x2="60" y2="0" stroke="#94A3B8" stroke-width="1.5"/>
+                <line x1="0" y1="-4" x2="0" y2="4" stroke="#94A3B8" stroke-width="1.5"/>
+                <line x1="60" y1="-4" x2="60" y2="4" stroke="#94A3B8" stroke-width="1.5"/>
+                <text x="30" y="16" text-anchor="middle">1 km</text>
+              </g>
+            </svg>
+
+            <div class="map-legend" aria-hidden="true">
+              <span class="item"><span class="swatch s-ok"></span> Sensor activo</span>
+              <span class="item"><span class="swatch s-alert"></span> Detección en curso</span>
+              <span class="item"><span class="swatch s-route"></span> Ruta de la alerta</span>
+            </div>
+          </div>
+
+          <div class="reveal">
+            <div class="phone-mock" role="img" aria-label="Vista previa de la alerta WhatsApp que recibe el equipo de guardaparques.">
+              <div class="phone-screen">
+                <div class="phone-statusbar">
+                  <span>03:42</span>
+                  <span>4G · 87%</span>
+                </div>
+                <div class="wa-header">
+                  <div class="wa-avatar" aria-hidden="true">C</div>
+                  <div>
+                    <div class="nm">Canopy GuardIAn</div>
+                    <div class="st">en línea</div>
+                  </div>
+                </div>
+
+                <div class="wa-bubble">
+                  <strong>🌲 Alerta de motosierra</strong><br />
+                  Sensor <strong>SN-04</strong> · confianza 94%<br />
+                  Lat: <strong>-38.6724</strong><br />
+                  Lon: <strong>-71.6543</strong>
+                  <span class="time">03:42</span>
+                </div>
+
+                <div class="wa-bubble delay">
+                  Fragmento de audio capturado:
+                  <div class="audio">
+                    <span class="play-btn" aria-hidden="true">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 4 20 12 6 20 6 4"/></svg>
+                    </span>
+                    <span class="wave" aria-hidden="true"></span>
+                    <span style="font-size:0.7rem; color: rgba(255,255,255,0.6); font-variant-numeric: tabular-nums;">0:08</span>
+                  </div>
+                  <span class="time">03:42</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PARALLAX 2 -->
+    <section class="parallax" style="background-image: url('https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=1920&q=80');" aria-label="Bosque de pinos visto desde arriba">
+      <div class="parallax-content reveal">
+        <h2>Más bosque vigilado. <span class="accent">Menos presupuesto.</span></h2>
+        <p>Diseñado en Chile para condiciones reales: alta humedad, lluvia, aislamiento total. Listo para escalar de un piloto a una red completa sin reinventar la infraestructura.</p>
+      </div>
+    </section>
+
+    <!-- HARDWARE -->
+    <section class="section" id="hardware" aria-labelledby="hw-title">
+      <div class="container">
+        <div class="section-head reveal">
+          <span class="section-eyebrow">Componentes del prototipo</span>
+          <h2 id="hw-title">Hardware accesible, pensado para campo.</h2>
+          <p class="section-sub">Diseño modular basado en componentes estándar (Raspberry Pi, micrófono industrial, panel solar), optimizado para robustez y bajo costo. En validación en terreno con socios piloto.</p>
+        </div>
+
+        <div class="hw-hero reveal">
+          <picture>
+            <source srcset="images/hardware.webp" type="image/webp" />
+            <img
+              src="images/hardware.jpg"
+              alt="Prototipo del sistema Canopy GuardIAn: carcasa intemperie con Raspberry Pi, módem 4G, panel solar, batería, antena y micrófono."
+              width="1600" height="900" loading="lazy" />
+          </picture>
+          <div class="hw-hero-caption">
+            <span class="badge">Prototipo funcional</span>
+            <span class="txt">Integración en carcasa compacta y resistente. Completando validación en campo.</span>
+          </div>
+        </div>
+
+        <div class="hardware-grid">
+          <article class="hw-card">
+            <div class="icon" aria-hidden="true">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M2 7h20M6 11h2M10 11h2M14 11h4"/></svg>
+            </div>
+            <h3>Raspberry Pi + IA</h3>
+            <p class="spec">Procesamiento local del modelo de IA acústica entrenado. Privacidad: el audio nunca sale del nodo.</p>
+          </article>
+
+          <article class="hw-card">
+            <div class="icon" aria-hidden="true">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+            </div>
+            <h3>Panel solar</h3>
+            <p class="spec">Alimentación solar 100%, batería de respaldo para días sin sol. Autonomía demostrada de 72+ horas.</p>
+          </article>
+
+          <article class="hw-card">
+            <div class="icon" aria-hidden="true">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v4M8 23h8"/></svg>
+            </div>
+            <h3>Micrófono direccional</h3>
+            <p class="spec">Rango de detección probado > 1 km, anti-viento, capaz de discriminar sonido de motosierra de ruido ambiental.</p>
+          </article>
+
+          <article class="hw-card">
+            <div class="icon" aria-hidden="true">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55a11 11 0 0 1 14 0M1.42 9a16 16 0 0 1 21.16 0M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12" y2="20"/></svg>
+            </div>
+            <h3>Módem 4G</h3>
+            <p class="spec">Conectividad celular para zonas rurales aisladas. Fallback a SMS. Probado en cobertura Biobío.</p>
+          </article>
+
+          <article class="hw-card">
+            <div class="icon" aria-hidden="true">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="18" height="10" rx="2"/><path d="M22 11v2"/></svg>
+            </div>
+            <h3>Batería LiFePO₄</h3>
+            <p class="spec">Química segura, ciclos de vida 3000+. Autonomía 72h sin sol. Diseño para reemplazo en campo si es necesario.</p>
+          </article>
+
+          <article class="hw-card">
+            <div class="icon" aria-hidden="true">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 2 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4"/><path d="M16 16l4 4M20 16l-4 4"/></svg>
+            </div>
+            <h3>Carcasa IP67</h3>
+            <p class="spec">Resistencia a humedad, polvo, impactos. Diseño discreto, difícil de vandalizar. Testeo en laboratorio completado.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- CASOS DE USO -->
+    <section class="section" id="casos" aria-labelledby="casos-title">
+      <div class="container">
+        <div class="section-head reveal">
+          <span class="section-eyebrow">Mercado objetivo</span>
+          <h2 id="casos-title">Orientado a industria forestal y áreas protegidas.</h2>
+          <p class="section-sub">El proyecto está diseñado para dos segmentos clave en Chile: empresas forestales (especialmente en el Biobío, donde se concentra el 63,7% del PIB forestal nacional) y administradores de áreas protegidas como CONAF.</p>
+        </div>
+
+        <div class="use-cases">
+          <article class="uc-card">
+            <div class="icon" aria-hidden="true">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 4 7v6c0 5 3.5 8.5 8 9 4.5-.5 8-4 8-9V7l-8-5z"/></svg>
+            </div>
+            <h3>Áreas protegidas</h3>
+            <p class="muted">Parques nacionales, reservas y monumentos naturales bajo administración de CONAF.</p>
+            <ul>
+              <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Vigilancia en zonas remotas sin presencia constante de guardaparques</li>
+              <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Evidencia georreferenciada para procesos sancionatorios</li>
+              <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Apoyo en la protección de especies nativas como alerce y araucaria</li>
+              <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Integración con protocolos de respuesta de CONAF y Carabineros</li>
+            </ul>
+          </article>
+
+          <article class="uc-card">
+            <div class="icon" aria-hidden="true">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 22V8a3 3 0 0 1 3-3h12a3 3 0 0 1 3 3v14"/><path d="M7 22v-7h10v7M7 11h10"/></svg>
+            </div>
+            <h3>Predios forestales privados</h3>
+            <p class="muted">Empresas y particulares que gestionan plantaciones y bosque nativo en grandes extensiones.</p>
+            <ul>
+              <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Reducción de pérdidas por robo de madera</li>
+              <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Monitoreo perimetral sin necesidad de rondas humanas constantes</li>
+              <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Aporte verificable a certificaciones de manejo sustentable (FSC, PEFC)</li>
+              <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Coordinación directa con seguridad privada y autoridades locales</li>
+            </ul>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- EQUIPO -->
+    <section class="section" id="equipo" aria-labelledby="equipo-title">
+      <div class="container">
+        <div class="section-head reveal">
+          <span class="section-eyebrow">Equipo</span>
+          <h2 id="equipo-title">Quién está detrás del proyecto.</h2>
+        </div>
+        <div class="team-wrap">
+          <article class="team-member reveal">
+            <div class="team-photo-wrap">
+              <img
+                src="images/ariel-herrera.jpg"
+                alt="Ariel Herrera, fundador de Canopy GuardIAn."
+                width="600" height="600" loading="lazy" />
+            </div>
+            <div class="team-info">
+              <h3>Ariel Herrera</h3>
+              <p class="role">Fundador · Ingeniero en Conservación de Recursos Naturales (UdeC)</p>
+              <p class="bio">10 años de experiencia en planificación para la conservación de la biodiversidad, restauración ecológica y monitoreo de flora y fauna a lo largo de Chile. <strong style="color: var(--color-foreground);">Magíster en Ecosistemas Marinos y Costeros</strong> (Universitat Politècnica de València, 2025), Diplomado FAO en Biodiversidad y Conservación, y Profesional Certificado en Restauración Ecológica (CERP) por la Society for Ecological Restoration.</p>
+              <p class="bio">Su experiencia técnica combina <strong style="color: var(--color-foreground);">bioacústica, microcontroladores de bajo costo y algoritmos de detección</strong> — habilidades aplicadas actualmente en Mar Futura Foundation a un sistema acústico para detectar pesca con dinamita en Perú, base técnica directa del prototipo Canopy GuardIAn. Trabajó previamente en el Proyecto +Bosques de FAO en la Región del Biobío, en CONAF (Parque Nacional Torres del Paine) y en el Laboratorio de Ecología de Paisaje de la Universidad de Concepción.</p>
+              <div class="team-tags" aria-label="Áreas de expertise">
+                <span class="team-tag">Bioacústica</span>
+                <span class="team-tag">Restauración ecológica</span>
+                <span class="team-tag">SIG · Teledetección</span>
+                <span class="team-tag">Microcontroladores</span>
+                <span class="team-tag">R / Python</span>
+                <span class="team-tag">Conservación forestal</span>
+              </div>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- VALIDACIÓN EN TERRENO -->
+    <section class="section" id="terreno" aria-labelledby="terreno-title">
+      <div class="container">
+        <div class="section-head reveal">
+          <span class="section-eyebrow">Plan de validación</span>
+          <h2 id="terreno-title">Hoy en laboratorio — mañana en bosque.</h2>
+          <p class="section-sub">Actualmente estamos realizando <strong style="color: var(--color-foreground);">pruebas en laboratorio</strong>: calibrando el modelo de IA con grabaciones controladas de motosierra, evaluando consumo energético, verificando la cadena de detección → alerta WhatsApp y midiendo la robustez del hardware. Con el financiamiento CORFO Semilla Inicia Biobío daremos el salto a campo: primero bosque nativo, luego plantación, y finalmente iteraciones a partir de la retroalimentación recogida.</p>
+        </div>
+
+        <div class="terreno">
+          <article class="terreno-card reveal">
+            <picture>
+              <source srcset="images/bosque-nativo.webp" type="image/webp" />
+              <img
+                src="images/bosque-nativo.jpg"
+                alt="Sensor Canopy GuardIAn instalado en un árbol nativo, rodeado de araucarias en el sur de Chile."
+                width="1200" height="1500" loading="lazy" />
+            </picture>
+            <div class="caption">
+              <span class="tag">Fase 2 · próxima</span>
+              <h3>Bosque nativo</h3>
+              <p>Primera prueba del MVP en terreno. Calibración del modelo de IA y validación de detección en bosque heterogéneo del Biobío.</p>
+            </div>
+          </article>
+
+          <article class="terreno-card reveal">
+            <picture>
+              <source srcset="images/plantacion.webp" type="image/webp" />
+              <img
+                src="images/plantacion.jpg"
+                alt="Plantación forestal donde se planea instalar el prototipo."
+                width="1200" height="1500" loading="lazy" />
+            </picture>
+            <div class="caption">
+              <span class="tag">Fase 3</span>
+              <h3>Plantación forestal</h3>
+              <p>Segunda prueba en contexto de industria forestal. Evaluación en plantaciones de pino y eucalipto.</p>
+            </div>
+          </article>
+
+          <article class="terreno-card reveal">
+            <picture>
+              <source srcset="images/ranger-alerta.webp" type="image/webp" />
+              <img
+                src="images/ranger-alerta.jpg"
+                alt="Operador revisando alerta del sistema en su teléfono."
+                width="1200" height="1500" loading="lazy" />
+            </picture>
+            <div class="caption">
+              <span class="tag">Fase 4</span>
+              <h3>Iteración y mejora</h3>
+              <p>Retroalimentación de usuarios reales (guardaparques, operadores forestales) para refinar IA, hardware y flujos operativos.</p>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- IMPACTO ESPERADO -->
+    <section class="section" aria-labelledby="impacto">
+      <div class="container">
+        <div class="section-head reveal">
+          <span class="section-eyebrow">Impacto esperado</span>
+          <h2 id="impacto">Escala y sostenibilidad del proyecto.</h2>
+        </div>
+        <div class="benefits">
+          <div class="benefit">
+            <div class="num">&lt;10s</div>
+            <p>Tiempo medio entre detección y alerta al ranger, vs horas en vigilancia manual.</p>
+          </div>
+          <div class="benefit">
+            <div class="num">24/7</div>
+            <p>Monitoreo continuo sin depender de presencia humana — especialmente en noches.</p>
+          </div>
+          <div class="benefit">
+            <div class="num">∞</div>
+            <p>Escalabilidad: desde 1 sensor a cientos en la misma red y dashboard compartido.</p>
+          </div>
+          <div class="benefit">
+            <div class="num">Bajo costo</div>
+            <p>BOM &lt; USD $800/nodo (vs $3-5K sistemas tradicionales). Operación sostenible: solo costo de SIM 4G.</p>
+          </div>
+          <div class="benefit">
+            <div class="num">Evidencia</div>
+            <p>Audio verificable, GPS exacto y timestamp auditables para procesos legales y enforcement.</p>
+          </div>
+          <div class="benefit">
+            <div class="num">Abierto</div>
+            <p>Arquitectura modular permite customización e integración con sistemas CONAF o privados.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CONTACTO + CTA -->
+    <section class="section" id="contacto" aria-labelledby="contacto-title">
+      <div class="container">
+        <div class="cta">
+          <div class="contact">
+            <div class="contact-info">
+              <span class="section-eyebrow">Hablemos</span>
+              <h2 id="contacto-title">¿Interesado en ser socio piloto o en el proyecto?</h2>
+              <p class="muted">Nos encantaría colaborar con CONAF, ONGs ambientales, empresas forestales o gobiernos locales. Comparte tus ideas de aplicación o consultas sobre financiamiento CORFO.</p>
+              <ul>
+                <li>
+                  <span class="icon" aria-hidden="true">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                  </span>
+                  <div><strong>Email</strong>aherrera@marfutura.org</div>
+                </li>
+                <li>
+                  <span class="icon" aria-hidden="true">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                  </span>
+                  <div><strong>Operación</strong>Región del Biobío, Chile</div>
+                </li>
+              </ul>
+            </div>
+
+            <form class="form" id="contact-form" novalidate>
+              <div class="form-success" id="form-success" role="status" aria-live="polite">
+                Gracias por tu interés. Te contactaremos a la brevedad.
+              </div>
+
+              <div class="field">
+                <label for="nombre">Nombre completo<span class="req" aria-hidden="true">*</span></label>
+                <input id="nombre" name="nombre" type="text" autocomplete="name" required aria-required="true" />
+              </div>
+
+              <div class="field">
+                <label for="organizacion">Organización<span class="req" aria-hidden="true">*</span></label>
+                <input id="organizacion" name="organizacion" type="text" autocomplete="organization" required aria-required="true" />
+                <span class="helper">CONAF, ONG, empresa forestal, municipio, etc.</span>
+              </div>
+
+              <div class="field">
+                <label for="email">Email<span class="req" aria-hidden="true">*</span></label>
+                <input id="email" name="email" type="email" inputmode="email" autocomplete="email" required aria-required="true" />
+              </div>
+
+              <div class="field">
+                <label for="interes">¿Cuál es tu interés?</label>
+                <select id="interes" name="interes">
+                  <option value="">Selecciona una opción</option>
+                  <option value="piloto">Ser socio piloto</option>
+                  <option value="conaf">Contacto CONAF</option>
+                  <option value="ong">ONG ambiental</option>
+                  <option value="empresa">Empresa forestal</option>
+                  <option value="municipio">Municipio / Gobierno local</option>
+                  <option value="inversor">Financiamiento / Inversión</option>
+                  <option value="otro">Otro</option>
+                </select>
+              </div>
+
+              <div class="field">
+                <label for="mensaje">Mensaje</label>
+                <textarea id="mensaje" name="mensaje" rows="4" placeholder="Cuéntanos cómo podemos colaborar o tu pregunta sobre el proyecto"></textarea>
+              </div>
+
+              <button type="submit" class="btn btn-primary">Enviar consulta</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container footer-inner">
+      <div>© <span id="year"></span> Canopy GuardIAn · Proyecto de innovación</div>
+      <div>Desarrollado en Chile, para la protección de bosques nativos.</div>
+    </div>
+  </footer>
+
+  <script>
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    // Reveal on scroll (respects prefers-reduced-motion)
+    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (!prefersReduced && 'IntersectionObserver' in window) {
+      const io = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+            io.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.15, rootMargin: '0px 0px -60px 0px' });
+      document.querySelectorAll('.reveal').forEach((el) => io.observe(el));
+    } else {
+      document.querySelectorAll('.reveal').forEach((el) => el.classList.add('visible'));
+    }
+
+    const form = document.getElementById('contact-form');
+    const success = document.getElementById('form-success');
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      // Validación mínima HTML5
+      if (!form.checkValidity()) {
+        const firstInvalid = form.querySelector(':invalid');
+        if (firstInvalid) firstInvalid.focus();
+        return;
+      }
+      // Aquí se conectaría al backend / servicio (ej: Formspree, Resend, etc.)
+      success.classList.add('show');
+      form.reset();
+      success.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
+  </script>
+</body>
+</html>
