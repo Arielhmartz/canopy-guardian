@@ -26,6 +26,8 @@ TARGETS = [
     "bosque-nativo",
     "plantacion",
     "ranger-alerta",
+    "ariel-herrera",
+    "esteban-donoso",
 ]
 
 

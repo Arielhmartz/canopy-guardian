@@ -1017,6 +1017,8 @@
 
     /* ===== Equipo ===== */
     .team-wrap {
+      display: grid;
+      gap: 24px;
       max-width: 880px;
       margin: 0 auto;
     }
@@ -2111,23 +2113,52 @@
         <div class="team-wrap">
           <article class="team-member reveal">
             <div class="team-photo-wrap">
-              <img
-                src="images/ariel-herrera.jpg"
-                alt="Ariel Herrera, fundador de Canopy GuardIAn."
-                width="600" height="600" loading="lazy" />
+              <picture>
+                <source srcset="images/ariel-herrera.webp" type="image/webp" />
+                <img
+                  src="images/ariel-herrera.jpg"
+                  alt="Ariel Herrera, fundador de Canopy GuardIAn."
+                  width="1200" height="1200" loading="lazy" />
+              </picture>
             </div>
             <div class="team-info">
               <h3>Ariel Herrera</h3>
               <p class="role">Fundador · Ingeniero en Conservación de Recursos Naturales (UdeC)</p>
               <p class="bio">10 años de experiencia en planificación para la conservación de la biodiversidad, restauración ecológica y monitoreo de flora y fauna a lo largo de Chile. <strong style="color: var(--color-foreground);">Magíster en Ecosistemas Marinos y Costeros</strong> (Universitat Politècnica de València, 2025), Diplomado FAO en Biodiversidad y Conservación, y Profesional Certificado en Restauración Ecológica (CERP) por la Society for Ecological Restoration.</p>
               <p class="bio">Su experiencia técnica combina <strong style="color: var(--color-foreground);">bioacústica, microcontroladores de bajo costo y algoritmos de detección</strong> — habilidades aplicadas actualmente en Mar Futura Foundation a un sistema acústico para detectar pesca con dinamita en Perú, base técnica directa del prototipo Canopy GuardIAn. Trabajó previamente en el Proyecto +Bosques de FAO en la Región del Biobío, en CONAF (Parque Nacional Torres del Paine) y en el Laboratorio de Ecología de Paisaje de la Universidad de Concepción.</p>
-              <div class="team-tags" aria-label="Áreas de expertise">
+              <div class="team-tags" aria-label="Áreas de expertise de Ariel Herrera">
                 <span class="team-tag">Bioacústica</span>
                 <span class="team-tag">Restauración ecológica</span>
                 <span class="team-tag">SIG · Teledetección</span>
                 <span class="team-tag">Microcontroladores</span>
                 <span class="team-tag">R / Python</span>
                 <span class="team-tag">Conservación forestal</span>
+              </div>
+            </div>
+          </article>
+
+          <article class="team-member reveal">
+            <div class="team-photo-wrap">
+              <picture>
+                <source srcset="images/esteban-donoso.webp" type="image/webp" />
+                <img
+                  src="images/esteban-donoso.jpg"
+                  alt="Esteban Donoso, cofundador y experto en hardware de Canopy GuardIAn."
+                  width="1200" height="1200" loading="lazy" />
+              </picture>
+            </div>
+            <div class="team-info">
+              <h3>Esteban Donoso</h3>
+              <p class="role">Cofundador · Experto en Hardware — Ingeniero Físico (USACH)</p>
+              <p class="bio">Ingeniero Físico con más de 5 años de experiencia en instrumentación científica y electrónica, complementados con investigación académica. <strong style="color: var(--color-foreground);">Especializado en diseño de hardware para monitoreo ambiental en entornos extremos</strong>: ha desplegado instrumentos en el Llano de Chajnantor (5.000 m s.n.m., Desierto de Atacama) y en la Expedición Científica Chilena a la Antártica 2025, donde lideró el equipo de campo.</p>
+              <p class="bio">Actualmente es <strong style="color: var(--color-foreground);">Site Testing Engineer en el Núcleo Milenio TITANs (Universidad de Concepción)</strong>, donde diseña y fabrica monitores de vapor de agua de bajo costo para la próxima generación del Event Horizon Telescope (ngEHT), colaborando con el Max Planck Institute for Radio Astronomy. Previamente, en JRI Mining, lideró el desarrollo de un dispositivo autónomo de bajo costo para monitoreo de calidad de agua en humedales — la misma filosofía técnica que aplicamos en Canopy GuardIAn. También diseñó circuitos para un sistema temprano de alerta de incendios forestales (ICI Corp), antecedente directo de la electrónica del proyecto actual.</p>
+              <div class="team-tags" aria-label="Áreas de expertise de Esteban Donoso">
+                <span class="team-tag">Electrónica analógica/digital</span>
+                <span class="team-tag">PCB</span>
+                <span class="team-tag">Embedded (RPi · ESP32 · Arduino)</span>
+                <span class="team-tag">Sensores · ADC</span>
+                <span class="team-tag">3D · SolidWorks · Fusion 360</span>
+                <span class="team-tag">Python · MATLAB</span>
               </div>
             </div>
           </article>
