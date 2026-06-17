@@ -52,4 +52,4 @@ Sitio estático, desplegado en DigitalOcean App Platform (Static Site, plan grat
 ## Contacto
 
 **Ariel Herrera** · Ingeniero en Conservación de Recursos Naturales
-[aherrera@marfutura.org](mailto:aherrera@marfutura.org)
+[arielmar.upv@gmail.com](mailto:arielmar.upv@gmail.com)

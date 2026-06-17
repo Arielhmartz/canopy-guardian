@@ -942,6 +942,87 @@
       border-radius: 50%;
     }
 
+    /* ===== Modelo de negocio (módulos) ===== */
+    .modules-grid {
+      display: grid;
+      gap: 18px;
+      grid-template-columns: 1fr;
+    }
+    @media (min-width: 640px) { .modules-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (min-width: 1024px) { .modules-grid { grid-template-columns: repeat(4, 1fr); } }
+    .module-card {
+      position: relative;
+      padding: 28px 24px;
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      transition: transform var(--transition), border-color var(--transition);
+      overflow: hidden;
+    }
+    .module-card:hover {
+      transform: translateY(-3px);
+      border-color: rgba(34, 197, 94, 0.35);
+    }
+    .module-card .module-icon {
+      width: 48px; height: 48px;
+      display: grid; place-items: center;
+      background: var(--color-accent-soft);
+      color: var(--color-accent);
+      border-radius: 14px;
+      margin-bottom: 18px;
+      font-size: 1.4rem;
+    }
+    .module-card h3 {
+      font-size: 1.1rem;
+      margin-bottom: 8px;
+    }
+    .module-card p {
+      font-size: 0.92rem;
+      color: var(--color-muted-fg);
+      margin: 0;
+      line-height: 1.55;
+    }
+    .module-card.core {
+      background:
+        radial-gradient(ellipse 100% 80% at 50% 0%, rgba(34, 197, 94, 0.15), transparent 60%),
+        var(--color-surface);
+      border-color: rgba(34, 197, 94, 0.45);
+    }
+    .module-badge {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      display: inline-flex;
+      align-items: center;
+      padding: 3px 10px;
+      background: var(--color-accent);
+      color: #052e16;
+      border-radius: 999px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    .module-foot {
+      margin-top: 28px;
+      padding: 18px 22px;
+      background: var(--color-surface-2);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      display: flex; align-items: center; gap: 14px;
+      color: var(--color-muted-fg);
+      font-size: 0.92rem;
+    }
+    .module-foot .icon {
+      flex: none;
+      width: 36px; height: 36px;
+      display: grid; place-items: center;
+      background: var(--color-accent-soft);
+      color: var(--color-accent);
+      border-radius: 10px;
+    }
+    .module-foot strong { color: var(--color-foreground); }
+
     /* ===== Hardware ===== */
     .hardware-grid {
       display: grid; gap: 16px;
@@ -1367,6 +1448,7 @@
         <a href="#estado">Roadmap</a>
         <a href="#hardware">Hardware</a>
         <a href="#equipo">Equipo</a>
+        <a href="#modelo">Modelo</a>
         <a href="#contacto">Contacto</a>
       </nav>
       <a class="btn btn-primary" href="#contacto">Postulación CORFO</a>
@@ -1379,7 +1461,7 @@
       <div class="container">
         <div class="hero-grid">
           <div class="hero-text">
-            <span class="hero-eyebrow"><span class="dot" aria-hidden="true"></span>Postulación CORFO Semilla Inicia Biobío 2026</span>
+            <span class="hero-eyebrow"><span class="dot" aria-hidden="true"></span>Escalable · Modular · Postulación CORFO Semilla Inicia Biobío 2026</span>
             <h1>Proteger bosques con <span class="accent">IA acústica de bajo costo</span>.</h1>
             <p class="hero-sub">Estamos desarrollando Canopy GuardIAn, un sistema innovador de detección de tala ilegal que combina un modelo de aprendizaje profundo embebido, hardware accesible y energía solar. Postulamos al fondo <strong style="color: var(--color-foreground); font-weight: 500;">CORFO Semilla Inicia Biobío</strong> para validar el MVP en bosque nativo y plantaciones, orientado a la industria forestal y áreas protegidas de Chile.</p>
             <div class="hero-ctas">
@@ -2150,9 +2232,10 @@
             <div class="team-info">
               <h3>Esteban Donoso</h3>
               <p class="role">Cofundador · Experto en Hardware — Ingeniero Físico (USACH)</p>
-              <p class="bio">Ingeniero Físico con más de 5 años de experiencia en instrumentación científica y electrónica, complementados con investigación académica. <strong style="color: var(--color-foreground);">Especializado en diseño de hardware para monitoreo ambiental en entornos extremos</strong>: ha desplegado instrumentos en el Llano de Chajnantor (5.000 m s.n.m., Desierto de Atacama) y en la Expedición Científica Chilena a la Antártica 2025, donde lideró el equipo de campo.</p>
-              <p class="bio">Actualmente es <strong style="color: var(--color-foreground);">Site Testing Engineer en el Núcleo Milenio TITANs (Universidad de Concepción)</strong>, donde diseña y fabrica monitores de vapor de agua de bajo costo para la próxima generación del Event Horizon Telescope (ngEHT), colaborando con el Max Planck Institute for Radio Astronomy. Previamente, en JRI Mining, lideró el desarrollo de un dispositivo autónomo de bajo costo para monitoreo de calidad de agua en humedales — la misma filosofía técnica que aplicamos en Canopy GuardIAn. También diseñó circuitos para un sistema temprano de alerta de incendios forestales (ICI Corp), antecedente directo de la electrónica del proyecto actual.</p>
+              <p class="bio">Ingeniero Físico con más de 5 años de experiencia en instrumentación científica y electrónica de precisión. Actualmente es <strong style="color: var(--color-foreground);">Ingeniero Electrónico e Instrumentación en el Observatorio APEX (Atacama Pathfinder Experiment)</strong>, a cargo del funcionamiento de los receptores de radiofrecuencia milimétricos y submilimétricos de la antena de 12 m en el Llano de Chajnantor (5.100 m s.n.m., Desierto de Atacama) — uno de los entornos más exigentes del planeta para hardware electrónico.</p>
+              <p class="bio">Previamente, en el Núcleo Milenio TITANs (Universidad de Concepción) diseñó y fabricó monitores de vapor de agua de bajo costo para la próxima generación del Event Horizon Telescope, e integró la <strong style="color: var(--color-foreground);">Expedición Científica Chilena a la Antártica 2025</strong> como líder de equipo en campo. En JRI Mining lideró el desarrollo de un dispositivo autónomo de bajo costo para monitoreo de calidad de agua en humedales — misma filosofía técnica que Canopy GuardIAn. También diseñó la electrónica de un sistema temprano de alerta de incendios forestales (ICI Corp), antecedente directo del prototipo actual.</p>
               <div class="team-tags" aria-label="Áreas de expertise de Esteban Donoso">
+                <span class="team-tag">Receptores RF mm/submm</span>
                 <span class="team-tag">Electrónica analógica/digital</span>
                 <span class="team-tag">PCB</span>
                 <span class="team-tag">Embedded (RPi · ESP32 · Arduino)</span>
@@ -2162,6 +2245,59 @@
               </div>
             </div>
           </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- MODELO DE NEGOCIO -->
+    <section class="section" id="modelo" aria-labelledby="modelo-title">
+      <div class="container">
+        <div class="section-head reveal">
+          <span class="section-eyebrow">Modelo de negocio</span>
+          <h2 id="modelo-title">Suscripción escalable y modular.</h2>
+          <p class="section-sub">Canopy GuardIAn opera bajo un modelo de suscripción: el cliente elige los módulos que necesita y los activa por software, sin cambiar el hardware desplegado en terreno. A medida que evolucionan sus necesidades —desde detección de tala hasta monitoreo de biodiversidad o calidad ambiental— el sistema crece con ellos.</p>
+        </div>
+
+        <div class="modules-grid">
+          <article class="module-card core reveal">
+            <span class="module-badge">Núcleo</span>
+            <div class="module-icon" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L4 7v6c0 5.5 3.5 9.5 8 11 4.5-1.5 8-5.5 8-11V7l-8-5z"/><path d="M9 11l2 2 4-4"/></svg>
+            </div>
+            <h3>Detección de tala ilegal</h3>
+            <p>Identificación acústica de motosierras en tiempo real + alerta WhatsApp con GPS y audio de evidencia. Incluido en todos los planes.</p>
+          </article>
+
+          <article class="module-card reveal">
+            <div class="module-icon" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7-6 12-6 12S6 15 6 8z"/><circle cx="12" cy="8" r="2.5"/></svg>
+            </div>
+            <h3>Monitoreo biológico</h3>
+            <p>Detección y registro de fauna acústica para estudios de biodiversidad, índices ecológicos y monitoreo de especies indicadoras.</p>
+          </article>
+
+          <article class="module-card reveal">
+            <div class="module-icon" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h3l3-9 4 18 3-9h5"/></svg>
+            </div>
+            <h3>Monitoreo ambiental</h3>
+            <p>Análisis continuo de paisaje sonoro, niveles de ruido antrópico y detección de eventos ambientales relevantes (vehículos, maquinaria, disturbio acústico).</p>
+          </article>
+
+          <article class="module-card reveal">
+            <div class="module-icon" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            </div>
+            <h3>Alertas acústicas custom</h3>
+            <p>Entrenamiento de modelos a medida según necesidades del cliente: disparos, drones, fauna específica u otras firmas acústicas de interés.</p>
+          </article>
+        </div>
+
+        <div class="module-foot reveal">
+          <span class="icon" aria-hidden="true">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+          </span>
+          <span><strong>Actualizaciones over-the-air.</strong> Cada nodo desplegado recibe nuevos módulos y mejoras del modelo de IA sin intervención en terreno — la red instalada crece en capacidades, no en costos.</span>
         </div>
       </div>
     </section>
@@ -2253,8 +2389,8 @@
             <p>Audio verificable, GPS exacto y timestamp auditables para procesos legales y enforcement.</p>
           </div>
           <div class="benefit">
-            <div class="num">Abierto</div>
-            <p>Arquitectura modular permite customización e integración con sistemas CONAF o privados.</p>
+            <div class="num">Modular</div>
+            <p>Funcionalidades activables vía software según necesidad del cliente, sin reemplazar hardware.</p>
           </div>
         </div>
       </div>
@@ -2274,7 +2410,7 @@
                   <span class="icon" aria-hidden="true">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
                   </span>
-                  <div><strong>Email</strong>aherrera@marfutura.org</div>
+                  <div><strong>Email</strong><a href="mailto:arielmar.upv@gmail.com" style="color: var(--color-accent);">arielmar.upv@gmail.com</a></div>
                 </li>
                 <li>
                   <span class="icon" aria-hidden="true">
