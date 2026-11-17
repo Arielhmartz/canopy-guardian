@@ -1,19 +1,22 @@
-# Canopy GuardIAn
+# Soundscape Sentinel
 
-Landing page del proyecto **Canopy GuardIAn** — sistema de detección acústica de tala ilegal mediante IA embebida y hardware de bajo costo, orientado a la industria forestal y áreas protegidas de Chile.
+Landing page de **Soundscape Sentinel** — nodos IoT de monitoreo acústico pasivo con IA en el borde que entregan, 24/7, riqueza y ocurrencia de aves, índices de paisaje sonoro (NDSI, ACI, ADI) y variables ambientales, con reportes listos para expedientes SEIA/RCA. Dirigido a consultoras ambientales y titulares de proyectos de energía, minería e infraestructura en Chile y LATAM.
 
 ## Estado del proyecto
 
-- MVP en fase de pruebas de laboratorio
-- Postulación en curso a **CORFO Semilla Inicia Biobío 2026**
-- Equipo basado en la Región del Biobío, Chile
+- Idea validada → MVP; reutiliza la plataforma acústica desarrollada para Canopy GuardIAn
+- Postulación en curso a **Start-Up Chile Build (BIG13), 2026**
+- Sitio en inglés (requisito de la convocatoria y foco LATAM)
+
+> El proyecto anterior, **Canopy GuardIAn** (detección de tala ilegal, CORFO Semilla Inicia Biobío), se conserva en `canopy-guardian.html` y `comercial.html`.
 
 ## Estructura
 
 ```
-guardian-forestal/
-├── index.html              # Landing principal (versión CORFO)
-├── comercial.html          # Versión comercial alternativa
+canopy-guardian/
+├── index.html              # Landing principal — Soundscape Sentinel (EN)
+├── canopy-guardian.html    # Landing anterior — Canopy GuardIAn (versión CORFO)
+├── comercial.html          # Canopy GuardIAn — versión comercial alternativa
 ├── images/                 # Imágenes optimizadas (webp + jpg fallback)
 ├── optimize_images.py      # Script para regenerar versiones webp/jpg
 └── .gitignore
