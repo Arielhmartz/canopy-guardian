@@ -1130,14 +1130,6 @@
       object-fit: cover;
       display: block;
     }
-    .team-photo-initials {
-      display: flex; align-items: center; justify-content: center;
-      aspect-ratio: 1 / 1;
-      background: linear-gradient(135deg, var(--color-primary, #0f766e), var(--color-accent, #f59e0b));
-    }
-    .team-photo-initials span {
-      font-size: clamp(3rem, 8vw, 5rem); font-weight: 700; letter-spacing: 0.04em; color: #fff;
-    }
     .team-info {
       padding: 32px;
     }
@@ -1571,11 +1563,12 @@
       <div class="container proof-inner">
         <span class="proof-label">Team experience at</span>
         <ul class="proof-list">
-          <li>WWF Chile</li>
+          <li>APEX Observatory</li>
           <li>Fundación Mar Futura</li>
           <li>FAO +Bosques</li>
           <li>CONAF</li>
           <li>Univ. de Concepción</li>
+          <li>Chilean Antarctic Expedition</li>
         </ul>
       </div>
     </section>
@@ -1895,7 +1888,7 @@
       <div class="container">
         <div class="section-head reveal">
           <span class="section-eyebrow">Team</span>
-          <h2 id="team-title">Bioacoustics, AI and conservation finance, under one roof.</h2>
+          <h2 id="team-title">Ecology and hardware, under one roof.</h2>
         </div>
         <div class="team-wrap">
           <article class="team-member reveal">
@@ -1904,13 +1897,13 @@
                 <source srcset="images/ariel-herrera.webp" type="image/webp" />
                 <img
                   src="images/ariel-herrera.jpg"
-                  alt="Ariel Herrera, co-founder and CEO of Soundscape Sentinel."
+                  alt="Ariel Herrera, founder of Soundscape Sentinel."
                   width="1200" height="1200" loading="lazy" />
               </picture>
             </div>
             <div class="team-info">
               <h3>Ariel Herrera</h3>
-              <p class="role">Co-founder &amp; CEO · Conservation Engineer (UdeC) · MSc Marine &amp; Coastal Ecosystems (UPV)</p>
+              <p class="role">Founder · Conservation Engineer (UdeC) · MSc Marine &amp; Coastal Ecosystems (UPV)</p>
               <p class="bio">10 years of experience in biodiversity conservation planning, ecological restoration and flora and fauna monitoring across Chile. Conservation Manager at Fundación Mar Futura, where he leads <strong style="color: var(--color-foreground);">passive acoustic monitoring</strong> projects and machine-learning pipelines for bioacoustics. FAO Diploma in Biodiversity and Conservation and Certified Ecological Restoration Practitioner (CERP, Society for Ecological Restoration).</p>
               <p class="bio">Previously worked with FAO's +Bosques project in the Biobío Region, CONAF (Torres del Paine National Park) and the Landscape Ecology Lab at the University of Concepción.</p>
               <div class="team-tags" aria-label="Ariel Herrera's areas of expertise">
@@ -1925,21 +1918,27 @@
           </article>
 
           <article class="team-member reveal">
-            <div class="team-photo-wrap team-photo-initials" role="img" aria-label="Maximiliano Rivera, co-founder of Soundscape Sentinel.">
-              <span aria-hidden="true">MR</span>
+            <div class="team-photo-wrap">
+              <picture>
+                <source srcset="images/esteban-donoso.webp" type="image/webp" />
+                <img
+                  src="images/esteban-donoso.jpg"
+                  alt="Esteban Donoso, co-founder and hardware lead of Soundscape Sentinel."
+                  width="1200" height="1200" loading="lazy" />
+              </picture>
             </div>
             <div class="team-info">
-              <h3>Maximiliano Rivera</h3>
-              <p class="role">Co-founder · Business &amp; partnerships — Conservation Engineer (UdeC)</p>
-              <p class="bio">Currently <strong style="color: var(--color-foreground);">Landscape Finance Officer at WWF Chile</strong>, linking landscape restoration and prioritisation with long-term financing mechanisms. He brings first-hand knowledge of how conservation investment moves and who decides it.</p>
-              <p class="bio">Three years with FAO's +Bosques project (2022–2025) restoring degraded rivers, riparian forests and wetlands in the Biobío Region, including participatory mapping with Pehuenche communities and support to Chile's ENCCRV (REDD+). Trained at the Landscape Ecology Lab, University of Concepción; Interuniversity Master's in Ecosystem Restoration (Madrid, in progress) as a Fundación Carolina fellow. Certified Ecological Restoration Practitioner (SER).</p>
-              <div class="team-tags" aria-label="Maximiliano Rivera's areas of expertise">
-                <span class="team-tag">Conservation finance</span>
-                <span class="team-tag">Ecological restoration</span>
-                <span class="team-tag">Landscape connectivity</span>
-                <span class="team-tag">Spatial prioritisation</span>
-                <span class="team-tag">GIS · R · MaxEnt</span>
-                <span class="team-tag">Stakeholder engagement</span>
+              <h3>Esteban Donoso</h3>
+              <p class="role">Co-founder · Hardware lead — Physics Engineer (USACH)</p>
+              <p class="bio">5+ years in scientific instrumentation and precision electronics. Currently <strong style="color: var(--color-foreground);">Electronics &amp; Instrumentation Engineer at the APEX Observatory</strong> (Atacama Pathfinder Experiment), responsible for the millimetre and sub-millimetre receivers of the 12 m antenna at Llano de Chajnantor (5,100 m a.s.l.) — one of the harshest environments on Earth for electronics.</p>
+              <p class="bio">At the TITANs Millennium Nucleus (University of Concepción) he built low-cost water-vapour monitors for the next-generation Event Horizon Telescope, and led a field team in the 2025 Chilean Antarctic Scientific Expedition. He has also developed autonomous low-cost devices for wetland water-quality monitoring and early wildfire detection.</p>
+              <div class="team-tags" aria-label="Esteban Donoso's areas of expertise">
+                <span class="team-tag">Analog/digital electronics</span>
+                <span class="team-tag">PCB design</span>
+                <span class="team-tag">Embedded (RPi · ESP32 · Arduino)</span>
+                <span class="team-tag">Sensors · ADC</span>
+                <span class="team-tag">3D · SolidWorks · Fusion 360</span>
+                <span class="team-tag">Python · MATLAB</span>
               </div>
             </div>
           </article>
